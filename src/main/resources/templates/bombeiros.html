@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Efetivo - SIGEBOM</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/estilo.css}">
+</head>
+
+<body>
+  <div class="app">
+    <aside class="barra">
+      <div class="barra-marca">
+        <img th:src="@{/logo.png}" alt="Logotipo do SIGEBOM">
+        <div>
+          <strong>SIGEBOM</strong>
+          <span>1º Batalhão</span>
+        </div>
+      </div>
+      <nav>
+        <p class="rotulo-barra">Operação</p>
+        <a th:href="@{/painel}">Painel</a>
+        <a th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
+        <a th:href="@{/ocorrencias}">Ocorrências</a>
+        <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
+        <a th:href="@{/bombeiros}" class="ativo" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
+        <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+        <p class="rotulo-barra">Gestão</p>
+        <a th:href="@{/relatorios}">Relatórios</a>
+      </nav>
+      <div class="barra-usuario">
+        <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
+        <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
+        <a th:href="@{/logout}">Sair</a>
+      </div>
+    </aside>
+
+    <div class="conteudo">
+      <header class="topo">
+        <p class="trilha-nav">Cadastros / Efetivo</p>
+      </header>
+      <main>
+        <div class="cabecalho-pagina">
+          <h1>Efetivo da Corporação</h1>
+          <a class="btn btn-acao" th:href="@{/bombeiros/novo}">Cadastrar bombeiro</a>
+        </div>
+
+        <div class="cartao">
+          <div class="envolve-tabela" th:if="${bombeiros != null and !bombeiros.empty}">
+            <table class="tabela">
+              <thead>
+                <tr>
+                  <th>RE</th>
+                  <th>Posto/Grad.</th>
+                  <th>Nome completo</th>
+                  <th>E-mail</th>
+                  <th>Perfil</th>
+                  <th>Status</th>
+                  <th class="direita">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="b : ${bombeiros}">
+                  <td class="num nowrap" th:text="${b.matriculaRe}">000000</td>
+                  <td th:text="${b.postoGraduacao}">Soldado</td>
+                  <td th:text="${b.nome + ' ' + b.sobrenome}">Nome Sobrenome</td>
+                  <td th:text="${b.email}">email@sigebom.com</td>
+                  <td th:text="${b.perfil}">BOMBEIRO</td>
+                  <td>
+                    <span class="selo" th:classappend="${b.ativo ? 'selo-disponivel' : 'selo-indisponivel'}"
+                      th:text="${b.ativo ? 'Ativo' : 'Inativo'}">Ativo</span>
+                  </td>
+                  <td class="direita">
+
+                    <!-- Link para Editar -->
+                    <a class="btn btn-texto btn-p" th:href="@{/bombeiros/{id}(id=${b.id})}"
+                      title="Editar perfil">Editar</a>
+
+                    <!-- Formulário oculto para Inativar -->
+                    <form th:action="@{/bombeiros/{id}/inativar(id=${b.id})}" method="post" style="display:inline;"
+                      th:if="${b.ativo}">
+                      <button type="submit" class="btn btn-texto btn-p" title="Desativar perfil">Inativar</button>
+                    </form>
+
+                    <!-- Formulário oculto para Reativar -->
+                    <form th:action="@{/bombeiros/{id}/reativar(id=${b.id})}" method="post" style="display:inline;"
+                      th:if="${!b.ativo}">
+                      <button type="submit" class="btn btn-texto btn-p" title="Ativar perfil"
+                        style="color: var(--st-disponivel);">Reativar</button>
+                    </form>
+
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="vazio" th:if="${bombeiros == null or bombeiros.empty}">
+            <strong>Nenhum bombeiro cadastrado além do administrador.</strong>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+
+</html>

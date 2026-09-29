@@ -1,0 +1,1170 @@
+/* ==========================================================================
+   SIGEBOM   folha de estilo do sistema
+   Paleta base: sugestão 3 (#284b63 / #e36414 / #9a031e)
+   Para trocar de paleta, altere apenas os tokens em :root.
+   ========================================================================== */
+:root {
+  /* --- paleta ------------------------------------------------------------ */
+  --aco-900: #14252f;
+  --aco-800: #1d3a4d;
+  --aco: #284b63;
+  --aco-claro: #4a7594;
+  --laranja: #e36414;
+  --laranja-escuro: #bd500b;
+  --carmim: #9a031e;
+  --carmim-claro: #c9364e;
+  /* --- superfícies e tinta ---------------------------------------------- */
+  --fundo: #eceff2;
+  --branco: #ffffff;
+  --linha: #d3dbe1;
+  --linha-forte: #b6c2cb;
+  --tinta: #17242f;
+  --tinta-media: #4f6270;
+  --tinta-fraca: #7b8b97;
+  /* --- estados operacionais (viatura / bombeiro / ocorrência) ----------- */
+  --st-disponivel: #1f7a4d;
+  --st-disponivel-bg: #e2f2e9;
+  --st-atendimento: #e36414;
+  --st-atendimento-bg: #fdeadc;
+  --st-indisponivel: #6d7d89;
+  --st-indisponivel-bg: #e7ebee;
+  --st-critico: #9a031e;
+  --st-critico-bg: #fbe3e6;
+  /* --- métrica ----------------------------------------------------------- */
+  --raio: 4px;
+  --raio-g: 8px;
+  --sombra: 0 1px 2px rgba(20, 37, 47, .10), 0 4px 12px rgba(20, 37, 47, .06);
+  --barra: 232px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--fundo);
+  color: var(--tinta);
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+.prefixo,
+.numero-grande,
+.rotulo-barra {
+  font-family: "Barlow Condensed", "Inter", sans-serif;
+  font-weight: 600;
+  letter-spacing: .01em;
+  margin: 0;
+}
+
+h1 {
+  font-size: 30px;
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: 22px;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+a {
+  color: var(--aco);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--laranja);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Esqueleto: barra lateral + conteúdo
+   ========================================================================== */
+.app {
+  display: grid;
+  grid-template-columns: var(--barra) 1fr;
+  min-height: 100vh;
+}
+
+.barra {
+  background: var(--aco-900);
+  color: #dce5eb;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.barra-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.barra-marca img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+
+.barra-marca strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 21px;
+  letter-spacing: .04em;
+  color: #fff;
+}
+
+.barra-marca span {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  color: #8fa5b4;
+  line-height: 1;
+}
+
+.barra nav {
+  padding: 12px 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.rotulo-barra {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: .12em;
+  color: #7d94a5;
+  padding: 14px 12px 6px;
+  text-transform: uppercase;
+}
+
+.barra nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--raio);
+  color: #cfdae2;
+  font-size: 14.5px;
+  border-left: 3px solid transparent;
+}
+
+.barra nav a:hover {
+  background: rgba(255, 255, 255, .07);
+  text-decoration: none;
+}
+
+.barra nav a.ativo {
+  background: rgba(227, 100, 20, .16);
+  border-left-color: var(--laranja);
+  color: #fff;
+  font-weight: 500;
+}
+
+.barra nav a svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  opacity: .9;
+}
+
+.barra-usuario {
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  padding: 12px 16px;
+  font-size: 13px;
+}
+
+.barra-usuario p {
+  margin: 0;
+}
+
+.barra-usuario .nome {
+  color: #fff;
+  font-weight: 500;
+}
+
+.barra-usuario .perfil {
+  color: #8fa5b4;
+  font-size: 12px;
+}
+
+.barra-usuario a {
+  color: #cfdae2;
+  font-size: 12.5px;
+}
+
+/* --- topo ---------------------------------------------------------------- */
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topo {
+  background: var(--branco);
+  border-bottom: 1px solid var(--linha);
+  padding: 12px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.topo p {
+  margin: 0;
+}
+
+.topo .trilha-nav {
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.topo .trilha-nav b {
+  color: var(--tinta);
+  font-weight: 500;
+}
+
+.relogio {
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  color: var(--tinta-media);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.relogio .ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--st-disponivel);
+}
+
+main {
+  padding: 24px 26px 56px;
+  max-width: 1240px;
+}
+
+.cabecalho-pagina {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.cabecalho-pagina p {
+  margin: 4px 0 0;
+  color: var(--tinta-media);
+  max-width: 62ch;
+}
+
+/* ==========================================================================
+   Blocos
+   ========================================================================== */
+.cartao {
+  background: var(--branco);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-g);
+  box-shadow: var(--sombra);
+}
+
+.cartao>header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--linha);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cartao>.corpo {
+  padding: 18px;
+}
+
+.grade {
+  display: grid;
+  gap: 18px;
+}
+
+.grade-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grade-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grade-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grade-2-1 {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+/* --- indicadores --------------------------------------------------------- */
+.indicador {
+  background: var(--branco);
+  border: 1px solid var(--linha);
+  border-left: 4px solid var(--aco);
+  border-radius: var(--raio-g);
+  padding: 14px 16px;
+}
+
+.indicador.laranja {
+  border-left-color: var(--laranja);
+}
+
+.indicador.carmim {
+  border-left-color: var(--carmim);
+}
+
+.indicador.verde {
+  border-left-color: var(--st-disponivel);
+}
+
+.indicador .rotulo {
+  font-size: 13px;
+  color: var(--tinta-media);
+}
+
+.numero-grande {
+  font-size: 40px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  display: block;
+  margin: 6px 0 2px;
+}
+
+.indicador .nota {
+  font-size: 12.5px;
+  color: var(--tinta-fraca);
+}
+
+/* --- selos de status ----------------------------------------------------- */
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.selo::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.selo-disponivel {
+  color: var(--st-disponivel);
+  background: var(--st-disponivel-bg);
+}
+
+.selo-atendimento {
+  color: var(--laranja-escuro);
+  background: var(--st-atendimento-bg);
+}
+
+.selo-indisponivel {
+  color: var(--st-indisponivel);
+  background: var(--st-indisponivel-bg);
+}
+
+.selo-critico {
+  color: var(--st-critico);
+  background: var(--st-critico-bg);
+}
+
+.selo-neutro {
+  color: var(--aco);
+  background: #e4ecf2;
+}
+
+/* --- botões -------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-weight: 500;
+  padding: 9px 16px;
+  border-radius: var(--raio);
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: var(--aco);
+  color: #fff;
+  transition: background .12s ease;
+}
+
+.btn:hover {
+  background: var(--aco-800);
+  text-decoration: none;
+}
+
+.btn-acao {
+  background: var(--laranja);
+}
+
+.btn-acao:hover {
+  background: var(--laranja-escuro);
+}
+
+.btn-critico {
+  background: var(--carmim);
+}
+
+.btn-critico:hover {
+  background: #7c0217;
+}
+
+.btn-vazio {
+  background: transparent;
+  border-color: var(--linha-forte);
+  color: var(--tinta);
+}
+
+.btn-vazio:hover {
+  background: #e6ebef;
+}
+
+.btn-texto {
+  background: transparent;
+  color: var(--aco);
+  padding: 6px 8px;
+}
+
+.btn-texto:hover {
+  background: #e4ecf2;
+}
+
+.btn-p {
+  padding: 5px 10px;
+  font-size: 13.5px;
+}
+
+.btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.acoes-linha {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* --- tabelas ------------------------------------------------------------- */
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+
+.tabela th {
+  text-align: left;
+  font-size: 12.5px;
+  letter-spacing: .04em;
+  color: var(--tinta-media);
+  font-weight: 600;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--linha);
+  background: #f6f8fa;
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--linha);
+  vertical-align: middle;
+}
+
+.tabela tbody tr:hover {
+  background: #f7f9fb;
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabela .direita {
+  text-align: right;
+}
+
+.tabela .num {
+  font-variant-numeric: tabular-nums;
+}
+
+.prefixo {
+  font-size: 17px;
+  letter-spacing: .04em;
+  color: var(--aco-800);
+}
+
+.envolve-tabela {
+  overflow-x: auto;
+}
+
+.vazio {
+  padding: 34px 18px;
+  text-align: center;
+  color: var(--tinta-media);
+}
+
+.vazio strong {
+  display: block;
+  font-weight: 500;
+  color: var(--tinta);
+  margin-bottom: 4px;
+}
+
+/* --- formulários --------------------------------------------------------- */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+
+.campo>label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--tinta-media);
+}
+
+.campo .obrigatorio {
+  color: var(--carmim);
+}
+
+.campo input[type="text"],
+.campo input[type="email"],
+.campo input[type="password"],
+.campo input[type="tel"],
+.campo input[type="number"],
+.campo input[type="date"],
+.campo input[type="datetime-local"],
+.campo select,
+.campo textarea {
+  font: inherit;
+  color: var(--tinta);
+  padding: 9px 11px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--branco);
+  width: 100%;
+}
+
+.campo textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  border-color: var(--aco);
+  outline: 2px solid rgba(40, 75, 99, .18);
+  outline-offset: 0;
+}
+
+.campo .ajuda {
+  font-size: 12.5px;
+  color: var(--tinta-fraca);
+}
+
+.campo .erro {
+  font-size: 12.5px;
+  color: var(--carmim);
+  display: none;
+}
+
+.campo.invalido input,
+.campo.invalido select,
+.campo.invalido textarea {
+  border-color: var(--carmim);
+  background: #fffafb;
+}
+
+.campo.invalido .erro {
+  display: block;
+}
+
+.grade-campos {
+  display: grid;
+  gap: 0 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grade-campos .largo {
+  grid-column: 1 / -1;
+}
+
+fieldset {
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-g);
+  padding: 16px 18px 4px;
+  margin: 0 0 20px;
+}
+
+legend {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.marcavel {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 11px;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.marcavel:hover {
+  background: #f6f8fa;
+}
+
+.marcavel input {
+  margin-top: 3px;
+}
+
+.marcavel .desc {
+  font-size: 12.5px;
+  color: var(--tinta-fraca);
+}
+
+.marcavel.desabilitada {
+  opacity: .55;
+  cursor: not-allowed;
+  background: #f2f4f6;
+}
+
+/* --- avisos -------------------------------------------------------------- */
+.aviso {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--raio);
+  font-size: 14px;
+  border: 1px solid;
+  margin-bottom: 18px;
+}
+
+.aviso-info {
+  background: #e8f0f5;
+  border-color: #c2d6e2;
+  color: var(--aco-800);
+}
+
+.aviso-alerta {
+  background: var(--st-atendimento-bg);
+  border-color: #f1c39b;
+  color: #8f3d05;
+}
+
+.aviso-erro {
+  background: var(--st-critico-bg);
+  border-color: #eeb8c0;
+  color: var(--carmim);
+}
+
+.aviso-ok {
+  background: var(--st-disponivel-bg);
+  border-color: #b3ddc5;
+  color: #14603a;
+}
+
+/* ==========================================================================
+   Trilha de estados da ocorrência (elemento principal da tela de ocorrência)
+   ========================================================================== */
+.trilha {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-g);
+  background: var(--branco);
+  overflow: hidden;
+}
+
+.etapa {
+  padding: 14px 16px 16px;
+  border-right: 1px solid var(--linha);
+  position: relative;
+  background: #f7f9fb;
+  color: var(--tinta-fraca);
+}
+
+.etapa:last-child {
+  border-right: 0;
+}
+
+.etapa .nome {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  display: block;
+}
+
+.etapa .hora {
+  font-variant-numeric: tabular-nums;
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--tinta);
+  display: block;
+  margin-top: 2px;
+}
+
+.etapa .decorrido {
+  font-size: 12.5px;
+}
+
+.etapa::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: transparent;
+}
+
+.etapa.concluida {
+  background: var(--branco);
+  color: var(--tinta-media);
+}
+
+.etapa.concluida::after {
+  background: var(--st-disponivel);
+}
+
+.etapa.corrente {
+  background: var(--branco);
+  color: var(--laranja-escuro);
+}
+
+.etapa.corrente::after {
+  background: var(--laranja);
+}
+
+.etapa.corrente .nome {
+  color: var(--laranja-escuro);
+}
+
+.etapa.pendente .hora {
+  color: var(--tinta-fraca);
+}
+
+.etapa .editado {
+  font-size: 11.5px;
+  color: var(--tinta-fraca);
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  padding: 0 6px;
+  margin-left: 6px;
+  vertical-align: 2px;
+}
+
+/* --- ficha de dados (pares rótulo/valor) --------------------------------- */
+.ficha {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+}
+
+.ficha>div {
+  min-width: 0;
+}
+
+.ficha dt {
+  font-size: 12.5px;
+  color: var(--tinta-fraca);
+  margin-bottom: 2px;
+}
+
+.ficha dd {
+  margin: 0;
+  font-size: 14.5px;
+}
+
+.ficha dd.destaque {
+  font-weight: 500;
+}
+
+/* --- lista de recursos empenhados ---------------------------------------- */
+.recurso {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.recurso:last-child {
+  border-bottom: 0;
+}
+
+.recurso .info {
+  flex: 1;
+  min-width: 0;
+}
+
+.recurso .guarnicao {
+  font-size: 13px;
+  color: var(--tinta-media);
+}
+
+/* --- filtros ------------------------------------------------------------- */
+.filtros {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--linha);
+}
+
+.filtros .campo {
+  margin: 0;
+  min-width: 150px;
+}
+
+/* --- paginação ----------------------------------------------------------- */
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--linha);
+  font-size: 13.5px;
+  color: var(--tinta-media);
+}
+
+.paginacao .paginas {
+  display: flex;
+  gap: 4px;
+}
+
+.paginacao .paginas button {
+  font: inherit;
+  min-width: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--linha-forte);
+  background: var(--branco);
+  border-radius: var(--raio);
+  cursor: pointer;
+}
+
+.paginacao .paginas button[aria-current="page"] {
+  background: var(--aco);
+  border-color: var(--aco);
+  color: #fff;
+}
+
+/* ==========================================================================
+   Tela de acesso
+   ========================================================================== */
+.acesso {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+}
+
+.acesso-painel {
+  background: var(--aco-900);
+  color: #dce5eb;
+  padding: 48px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.acesso-painel .marca {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.acesso-painel .marca img {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+}
+
+.acesso-painel .marca strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 32px;
+  letter-spacing: .05em;
+  color: #fff;
+  display: block;
+  line-height: 1;
+}
+
+.acesso-painel .marca span {
+  font-size: 13px;
+  color: #8fa5b4;
+}
+
+.acesso-painel h1 {
+  color: #fff;
+  font-size: 40px;
+  max-width: 22ch;
+}
+
+.acesso-painel .lede {
+  color: #a9bdc9;
+  max-width: 44ch;
+  margin-top: 12px;
+}
+
+.acesso-painel .ciclo {
+  display: flex;
+  gap: 0;
+  margin-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+  padding-top: 16px;
+}
+
+.acesso-painel .ciclo div {
+  flex: 1;
+  font-size: 13px;
+  color: #8fa5b4;
+  padding-right: 12px;
+}
+
+.acesso-painel .ciclo b {
+  display: block;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--laranja);
+}
+
+.acesso-painel .rodape {
+  font-size: 12.5px;
+  color: #6f8899;
+}
+
+.acesso-form {
+  background: var(--branco);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.acesso-form form {
+  width: min(384px, 100%);
+}
+
+.acesso-form h2 {
+  font-size: 26px;
+}
+
+.acesso-form .sub {
+  color: var(--tinta-media);
+  margin: 4px 0 26px;
+  font-size: 14px;
+}
+
+.acesso-form .btn {
+  width: 100%;
+  padding: 11px;
+  font-size: 15.5px;
+}
+
+.acesso-form .apoio {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.perfis-demo {
+  margin-top: 26px;
+  border-top: 1px solid var(--linha);
+  padding-top: 16px;
+}
+
+.perfis-demo p {
+  font-size: 12.5px;
+  color: var(--tinta-fraca);
+  margin: 0 0 8px;
+}
+
+.perfis-demo .acoes-linha button {
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   Utilidades
+   ========================================================================== */
+.oculto {
+  display: none !important;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mt-24 {
+  margin-top: 24px;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.texto-fraco {
+  color: var(--tinta-fraca);
+  font-size: 13px;
+}
+
+.entre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Responsivo
+   ========================================================================== */
+@media (max-width: 1080px) {
+  .grade-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grade-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grade-2-1 {
+    grid-template-columns: 1fr;
+  }
+
+  .acesso {
+    grid-template-columns: 1fr;
+  }
+
+  .acesso-painel {
+    padding: 32px 28px;
+  }
+
+  .acesso-painel h1 {
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .barra {
+    position: static;
+    height: auto;
+  }
+
+  .barra nav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+  }
+
+  .rotulo-barra {
+    grid-column: 1 / -1;
+  }
+
+  .trilha {
+    grid-auto-flow: row;
+  }
+
+  .etapa {
+    border-right: 0;
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .grade-2,
+  .grade-3,
+  .grade-4,
+  .grade-campos {
+    grid-template-columns: 1fr;
+  }
+
+  .ficha {
+    grid-template-columns: 1fr;
+  }
+
+  main {
+    padding: 18px 16px 48px;
+  }
+
+  .topo {
+    padding: 10px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

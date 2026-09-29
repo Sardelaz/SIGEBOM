@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boletim de Ocorrência - SIGEBOM</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/estilo.css}">
+</head>
+
+<body>
+  <div class="app">
+    <aside class="barra">
+      <div class="barra-marca">
+        <img th:src="@{/logo.png}" alt="Logotipo do SIGEBOM">
+        <div>
+          <strong>SIGEBOM</strong>
+          <span>1º Batalhão</span>
+        </div>
+      </div>
+      <nav>
+        <p class="rotulo-barra">Operação</p>
+        <a th:href="@{/painel}">Painel</a>
+        <a th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
+        <a th:href="@{/ocorrencias}" class="ativo">Ocorrências</a>
+        <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
+        <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
+        <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+        <p class="rotulo-barra">Gestão</p>
+        <a th:href="@{/relatorios}">Relatórios</a>
+      </nav>
+      <div class="barra-usuario">
+        <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
+        <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
+        <a th:href="@{/logout}">Sair</a>
+      </div>
+    </aside>
+
+    <div class="conteudo">
+      <header class="topo">
+        <p class="trilha-nav">Operação / Ocorrências / <b>Boletim Final</b></p>
+      </header>
+      <main>
+        <div class="cabecalho-pagina">
+          <h1>Finalizar Ocorrência #<span th:text="${ocorrencia.id}"></span></h1>
+        </div>
+
+        <form th:action="@{/ocorrencias/{id}/finalizar(id=${ocorrencia.id})}" method="post" style="max-width: 860px;">
+
+          <fieldset>
+            <legend>Relatório Operacional (Boletim)</legend>
+
+            <div class="aviso aviso-alerta" th:if="${!ocorrencia.viaturas.empty}">
+              Atenção: Ao encerrar esta ocorrência, todas as viaturas empenhadas retornarão ao status 'Disponível'.
+            </div>
+
+            <div class="grade-campos">
+              <div class="campo largo mt-16">
+                <label for="relatorio">Descreva os procedimentos realizados no local pela guarnição</label>
+                <textarea id="relatorio" name="relatorio" rows="8" required
+                  placeholder="Relate as ações, vítimas, danos e demais dados pertinentes para o boletim final..."></textarea>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="acoes-linha">
+            <button type="submit" class="btn btn-acao">Encerrar e Liberar Viaturas</button>
+            <a class="btn btn-vazio" th:href="@{/ocorrencias}">Cancelar</a>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${ocorrencia.id == null ? 'Registrar Ocorrência - SIGEBOM' : 'Editar Ocorrência - SIGEBOM'}">Registrar
+    Ocorrência - SIGEBOM</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/estilo.css}">
+</head>
+
+<body>
+  <div class="app">
+    <aside class="barra">
+      <div class="barra-marca">
+        <img th:src="@{/logo.png}" alt="Logotipo do SIGEBOM">
+        <div>
+          <strong>SIGEBOM</strong>
+          <span>1º Batalhão</span>
+        </div>
+      </div>
+      <nav>
+        <p class="rotulo-barra">Operação</p>
+        <a th:href="@{/painel}">Painel</a>
+        <a th:href="@{/ocorrencias/nova}" class="ativo">Registrar ocorrência</a>
+        <a th:href="@{/ocorrencias}">Ocorrências</a>
+        <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
+        <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
+        <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+        <p class="rotulo-barra">Gestão</p>
+        <a th:href="@{/relatorios}">Relatórios</a>
+      </nav>
+      <div class="barra-usuario">
+        <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
+        <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
+        <a th:href="@{/logout}">Sair</a>
+      </div>
+    </aside>
+
+    <div class="conteudo">
+      <header class="topo">
+        <p class="trilha-nav">Operação / Ocorrências / <b
+            th:text="${ocorrencia.id == null ? 'Nova' : 'Editar'}">Nova</b></p>
+      </header>
+      <main>
+        <div class="cabecalho-pagina">
+          <h1 th:text="${ocorrencia.id == null ? 'Registrar Ocorrência' : 'Editar Ocorrência'}">Registrar Ocorrência
+          </h1>
+        </div>
+
+        <form th:action="@{/ocorrencias}" th:object="${ocorrencia}" method="post" style="max-width: 860px;">
+          <input type="hidden" th:field="*{id}">
+
+          <fieldset>
+            <legend>Informações da Ocorrência</legend>
+            <div class="grade-campos">
+              <div class="campo largo">
+                <label for="tipo">Tipo da ocorrência</label>
+                <input type="text" id="tipo" th:field="*{tipo}" required
+                  placeholder="Ex: Incêndio em residência, Acidente de trânsito...">
+              </div>
+              <div class="campo largo">
+                <label for="descricao">Descrição detalhada</label>
+                <textarea id="descricao" th:field="*{descricao}" rows="3"
+                  placeholder="Detalhes adicionais relatados pelo solicitante..."></textarea>
+              </div>
+              <div class="campo">
+                <label for="endereco">Endereço</label>
+                <input type="text" id="endereco" th:field="*{endereco}" required placeholder="Rua, número, referências">
+              </div>
+              <div class="campo">
+                <label for="bairro">Bairro</label>
+                <input type="text" id="bairro" th:field="*{bairro}" required>
+              </div>
+              <div class="campo">
+                <label for="gravidade">Gravidade Inicial</label>
+                <select id="gravidade" th:field="*{gravidade}" required>
+                  <option value="">Selecione a gravidade</option>
+                  <option value="ALTA">Alta (Crítica)</option>
+                  <option value="MEDIA">Média (Urgente)</option>
+                  <option value="BAIXA">Baixa (Rotina)</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Viaturas Empenhadas</legend>
+            <div class="grade-campos">
+              <div class="campo largo">
+                <label>Selecione as viaturas (As selecionadas ficarão 'Em Atendimento')</label>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                  <th:block th:each="v : ${viaturasOpcoes}">
+                    <label class="marcavel" style="width: auto; padding: 6px 12px;">
+                      <input type="checkbox" name="viaturaIds" th:value="${v.id}"
+                        th:checked="${empenhadasIds.contains(v.id)}">
+                      <span th:text="${v.prefixo + ' - ' + v.tipo}"></span>
+                    </label>
+                  </th:block>
+                  <span th:if="${viaturasOpcoes.empty}" class="ajuda">Nenhuma viatura disponível no momento.</span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Dados do Solicitante</legend>
+            <div class="grade-campos">
+              <div class="campo">
+                <label for="solicitante">Nome do Solicitante</label>
+                <input type="text" id="solicitante" th:field="*{solicitante}" required>
+              </div>
+              <div class="campo">
+                <label for="telefoneSolicitante">Telefone de Contato</label>
+                <input type="tel" id="telefoneSolicitante" th:field="*{telefoneSolicitante}" required
+                  placeholder="(00) 00000-0000">
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="acoes-linha">
+            <button type="submit" class="btn btn-acao">Salvar Ocorrência</button>
+            <a class="btn btn-vazio" th:href="@{/ocorrencias}">Cancelar</a>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ocorrências - SIGEBOM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/estilo.css}">
+</head>
+<body>
+<div class="app">
+  <aside class="barra">
+    <div class="barra-marca">
+      <img th:src="@{/logo.png}" alt="">
+      <div>
+        <strong>SIGEBOM</strong>
+        <span>1º Batalhão</span>
+      </div>
+    </div>
+    <nav>
+      <p class="rotulo-barra">Operação</p>
+      <a th:href="@{/painel}">Painel</a>
+      <a th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
+      <a th:href="@{/ocorrencias}" class="ativo">Ocorrências</a>
+      <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
+      <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
+      <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+      <p class="rotulo-barra">Gestão</p>
+      <a th:href="@{/relatorios}">Relatórios</a>
+    </nav>
+    <div class="barra-usuario">
+      <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
+      <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
+      <a th:href="@{/logout}">Sair</a>
+    </div>
+  </aside>
+
+  <div class="conteudo">
+    <header class="topo">
+      <p class="trilha-nav">Ocorrências</p>
+    </header>
+    <main>
+      <div class="cabecalho-pagina">
+        <h1>Ocorrências</h1>
+        <a class="btn btn-acao" th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
+      </div>
+
+      <div class="cartao">
+        <form class="filtros" th:action="@{/ocorrencias}" method="get">
+          <div class="campo">
+            <label for="de">De</label>
+            <input type="date" id="de" name="de" th:value="${param.de != null ? param.de : dataPadraoInicio}">
+          </div>
+          <div class="campo">
+            <label for="ate">Até</label>
+            <input type="date" id="ate" name="ate" th:value="${param.ate != null ? param.ate : dataPadraoFim}">
+          </div>
+          <div class="campo">
+            <label for="status">Situação</label>
+            <select id="status" name="status">
+              <option value="">Todas</option>
+              <option value="REGISTRADA" th:selected="${#strings.equals(param.status, 'REGISTRADA')}">Registrada</option>
+              <option value="EMPENHADA" th:selected="${#strings.equals(param.status, 'EMPENHADA')}">Empenhada</option>
+              <option value="EM_DESLOCAMENTO" th:selected="${#strings.equals(param.status, 'EM_DESLOCAMENTO')}">Em deslocamento</option>
+              <option value="NO_LOCAL" th:selected="${#strings.equals(param.status, 'NO_LOCAL')}">No local</option>
+              <option value="FINALIZADA" th:selected="${#strings.equals(param.status, 'FINALIZADA')}">Finalizada</option>
+              <option value="CANCELADA" th:selected="${#strings.equals(param.status, 'CANCELADA')}">Cancelada</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="gravidade">Gravidade</label>
+            <select id="gravidade" name="gravidade">
+              <option value="">Todas</option>
+              <option value="ALTA" th:selected="${#strings.equals(param.gravidade, 'ALTA')}">Alta</option>
+              <option value="MEDIA" th:selected="${#strings.equals(param.gravidade, 'MEDIA')}">Média</option>
+              <option value="BAIXA" th:selected="${#strings.equals(param.gravidade, 'BAIXA')}">Baixa</option>
+            </select>
+          </div>
+          <button type="submit" class="btn">Filtrar</button>
+        </form>
+
+        <div class="envolve-tabela" th:if="${ocorrencias != null and !ocorrencias.empty}">
+          <table class="tabela">
+            <thead>
+              <tr>
+                <th>Nº</th>
+                <th>Acionamento</th>
+                <th>Tipo e endereço</th>
+                <th>Gravidade</th>
+                <th>Situação</th>
+                <th>Viaturas</th>
+                <th class="direita">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="oc : ${ocorrencias.content}">
+                <td><a class="prefixo" th:href="@{/ocorrencias/{id}/editar(id=${oc.id})}" th:text="'#' + ${oc.id}">#1</a></td>
+                <td class="num nowrap" th:text="${#temporals.format(oc.horarioAcionamento, 'dd/MM/yyyy HH:mm')}">03/09/2026 13:42</td>
+                <td>
+                  <div th:text="${oc.tipo}">Incêndio em edificação</div>
+                  <div class="texto-fraco" th:text="${oc.endereco + (oc.bairro != null ? ' - ' + oc.bairro : '')}">Rua tal, 100</div>
+                </td>
+                <td>
+                    <span class="selo" th:classappend="${oc.gravidade.name() == 'ALTA' ? 'selo-critico' : (oc.gravidade.name() == 'MEDIA' ? 'selo-atendimento' : 'selo-disponivel')}" th:text="${oc.gravidade}">Alta</span>
+                </td>
+                <td>
+                    <span class="selo" th:classappend="${oc.status.name() == 'REGISTRADA' or oc.status.name() == 'NO_LOCAL' or oc.status.name() == 'EMPENHADA' ? 'selo-atendimento' : (oc.status.name() == 'FINALIZADA' ? 'selo-disponivel' : 'selo-indisponivel')}" th:text="${oc.status}">No local</span>
+                </td>
+                <td>
+                    <span th:each="v, iterStat : ${oc.viaturas}" class="prefixo" th:text="${v.prefixo} + (!${iterStat.last} ? ', ' : '')"></span>
+                    
+                    <form th:action="@{/ocorrencias/despacho}" method="post" th:if="${oc.viaturas.empty}" style="display:flex; gap: 5px;">
+                        <input type="hidden" name="id" th:value="${oc.id}">
+                        <select name="viaturaId" required style="padding: 4px; font-size: 12px; border-radius: 4px; border: 1px solid var(--linha-forte);">
+                            <option value="">Despachar...</option>
+                            <option th:each="v : ${viaturasDisponiveis}" th:value="${v.id}" th:text="${v.prefixo}"></option>
+                        </select>
+                        <button type="submit" class="btn btn-acao btn-p">OK</button>
+                    </form>
+                </td>
+                <td class="direita">
+                  <a class="btn btn-texto btn-p" th:href="@{/ocorrencias/{id}/editar(id=${oc.id})}">Editar</a>
+                  <a class="btn btn-texto btn-p" style="color: var(--st-disponivel);" 
+                      th:if="${oc.status.name() != 'FINALIZADA' and oc.status.name() != 'CANCELADA'}" 
+                      th:href="@{/ocorrencias/{id}/boletim(id=${oc.id})}">Finalizar</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="vazio" th:if="${ocorrencias == null or ocorrencias.empty}">
+          <strong>Nenhuma ocorrência no período</strong>
+        </div>
+
+        <div class="paginacao" th:if="${ocorrencias != null and ocorrencias.totalPages > 0}">
+          <span th:text="${ocorrencias.totalElements} + ' ocorrências'">0 ocorrências</span>
+          <div class="paginas">
+            <button type="button" th:each="i : ${#numbers.sequence(0, ocorrencias.totalPages - 1)}" th:text="${i + 1}" th:attr="aria-current=${ocorrencias.number == i ? 'page' : null}"></button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>

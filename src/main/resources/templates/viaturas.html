@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Frota - SIGEBOM</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/estilo.css}">
+</head>
+
+<body>
+  <div class="app">
+    <aside class="barra">
+      <div class="barra-marca">
+        <img th:src="@{/logo.png}" alt="Logotipo do SIGEBOM">
+        <div>
+          <strong>SIGEBOM</strong>
+          <span>1º Batalhão</span>
+        </div>
+      </div>
+      <nav>
+        <p class="rotulo-barra">Operação</p>
+        <a th:href="@{/painel}">Painel</a>
+        <a th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
+        <a th:href="@{/ocorrencias}">Ocorrências</a>
+        <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
+        <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
+        <a th:href="@{/viaturas}" class="ativo" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+        <p class="rotulo-barra">Gestão</p>
+        <a th:href="@{/relatorios}">Relatórios</a>
+      </nav>
+      <div class="barra-usuario">
+        <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
+        <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
+        <a th:href="@{/logout}">Sair</a>
+      </div>
+    </aside>
+
+    <div class="conteudo">
+      <header class="topo">
+        <p class="trilha-nav">Cadastros / Frota</p>
+      </header>
+      <main>
+        <div class="cabecalho-pagina">
+          <h1>Frota de Viaturas</h1>
+          <a class="btn btn-acao" th:href="@{/viaturas/nova}">Cadastrar viatura</a>
+        </div>
+
+        <div class="cartao">
+          <div class="envolve-tabela" th:if="${viaturas != null and !viaturas.empty}">
+            <table class="tabela">
+              <thead>
+                <tr>
+                  <th>Prefixo</th>
+                  <th>Tipo</th>
+                  <th>Placa</th>
+                  <th>Situação Operacional</th>
+                  <th>Status no Sistema</th>
+                  <th class="direita">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="v : ${viaturas}">
+                  <td><strong class="prefixo" th:text="${v.prefixo}">ABT-01</strong></td>
+                  <td th:text="${v.tipo}">Auto Bomba Tanque</td>
+                  <td class="num" th:text="${v.placa}">ABC-1234</td>
+                  <td>
+                    <span class="selo"
+                      th:classappend="${v.status.name() == 'DISPONIVEL' ? 'selo-disponivel' : (v.status.name() == 'EM_ATENDIMENTO' ? 'selo-atendimento' : 'selo-indisponivel')}"
+                      th:text="${v.status}">Disponível</span>
+                  </td>
+                  <td>
+                    <span class="selo" th:classappend="${v.ativo ? 'selo-disponivel' : 'selo-critico'}"
+                      th:text="${v.ativo ? 'Ativa' : 'Inativa'}">Ativa</span>
+                  </td>
+                  <td class="direita">
+
+                    <!-- Link para Editar -->
+                    <a class="btn btn-texto btn-p" th:href="@{/viaturas/{id}(id=${v.id})}"
+                      title="Editar viatura">Editar</a>
+
+                    <!-- Formulário oculto para Inativar -->
+                    <form th:action="@{/viaturas/{id}/inativar(id=${v.id})}" method="post" style="display:inline;"
+                      th:if="${v.ativo}">
+                      <button type="submit" class="btn btn-texto btn-p" title="Retirar de serviço">Inativar</button>
+                    </form>
+
+                    <!-- Formulário oculto para Reativar -->
+                    <form th:action="@{/viaturas/{id}/reativar(id=${v.id})}" method="post" style="display:inline;"
+                      th:if="${!v.ativo}">
+                      <button type="submit" class="btn btn-texto btn-p" title="Devolver ao serviço"
+                        style="color: var(--st-disponivel);">Reativar</button>
+                    </form>
+
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="vazio" th:if="${viaturas == null or viaturas.empty}">
+            <strong>Nenhuma viatura cadastrada no batalhão.</strong>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+
+</html>

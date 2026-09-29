@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recuperar Senha - SIGEBOM</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/estilo.css}">
+</head>
+
+<body>
+  <div class="acesso">
+    <section class="acesso-painel">
+      <div class="marca">
+        <img th:src="@{/logo.png}" alt="Logotipo do SIGEBOM">
+        <div>
+          <strong>SIGEBOM</strong>
+          <span>Sistema de gestão para bombeiros</span>
+        </div>
+      </div>
+      <p class="rodape">Uso restrito ao efetivo da corporação. Acessos são registrados.</p>
+    </section>
+
+    <section class="acesso-form">
+      <form th:action="@{/esqueci-senha}" method="post">
+        <h2>Recuperar senha</h2>
+        <p class="sub">Informe seu E-mail ou CPF cadastrado. Se o usuário existir, enviaremos as instruções de
+          recuperação.</p>
+
+        <div class="campo mt-24">
+          <label for="identificador">E-mail ou CPF</label>
+          <input type="text" id="identificador" name="identificador" required autofocus>
+        </div>
+
+        <button type="submit" class="btn btn-acao mt-16">Enviar link de recuperação</button>
+
+        <a th:href="@{/login}" class="btn btn-vazio" style="width: 100%; margin-top: 12px; text-align: center;">
+          Voltar ao login
+        </a>
+      </form>
+    </section>
+  </div>
+</body>
+
+</html>

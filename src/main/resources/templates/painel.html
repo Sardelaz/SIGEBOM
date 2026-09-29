@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel - SIGEBOM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/estilo.css}">
+</head>
+<body>
+<div class="app">
+  <aside class="barra">
+    <div class="barra-marca">
+      <img th:src="@{/logo.png}" alt="">
+      <div>
+        <strong>SIGEBOM</strong>
+        <span>1º Batalhão</span>
+      </div>
+    </div>
+    <nav>
+      <p class="rotulo-barra">Operação</p>
+      <a th:href="@{/painel}" class="ativo">Painel</a>
+      <a th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
+      <a th:href="@{/ocorrencias}">Ocorrências</a>
+      <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
+      <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
+      <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+      <p class="rotulo-barra">Gestão</p>
+      <a th:href="@{/relatorios}">Relatórios</a>
+    </nav>
+    <div class="barra-usuario">
+      <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
+      <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
+      <a th:href="@{/logout}">Sair</a>
+    </div>
+  </aside>
+
+  <div class="conteudo">
+    <header class="topo">
+      <p class="trilha-nav">Painel do plantão</p>
+    </header>
+    <main>
+      <div class="cabecalho-pagina">
+        <h1>Painel do plantão</h1>
+        <a class="btn btn-acao" th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
+      </div>
+
+      <section class="grade grade-4">
+        <div class="indicador laranja">
+          <span class="rotulo">Ocorrências abertas</span>
+          <span class="numero-grande" th:text="${totalAbertas != null ? totalAbertas : '0'}">0</span>
+          <span class="nota">status diferente de finalizada e cancelada</span>
+        </div>
+        <div class="indicador verde">
+          <span class="rotulo">Viaturas disponíveis</span>
+          <span class="numero-grande" th:text="${viaturasDisponiveis != null ? viaturasDisponiveis : '0'}">0</span>
+          <span class="nota">viaturas com status Disponível</span>
+        </div>
+        <div class="indicador">
+          <span class="rotulo">Efetivo disponível</span>
+          <span class="numero-grande" th:text="${efetivoDisponivel != null ? efetivoDisponivel : '0'}">0</span>
+          <span class="nota">bombeiros ativos e livres</span>
+        </div>
+        <div class="indicador carmim">
+          <span class="rotulo">Tempo médio de resposta</span>
+          <span class="numero-grande" th:text="${tempoMedio != null ? tempoMedio + ' min' : '0 min'}">0 min</span>
+          <span class="nota">do acionamento até a chegada ao local</span>
+        </div>
+      </section>
+
+      <section class="grade grade-2-1 mt-24">
+        <div class="cartao">
+          <header>
+            <h2>Ocorrências em atendimento</h2>
+            <!-- Passando parâmetros vazios para contornar o bloqueio de "dia atual" do Controller -->
+            <a th:href="@{/ocorrencias(de='',ate='')}">Ver todas</a>
+          </header>
+          <div class="envolve-tabela" th:if="${ocorrenciasAbertas != null and !ocorrenciasAbertas.empty}">
+            <table class="tabela">
+              <thead>
+                <tr>
+                  <th>Nº</th>
+                  <th>Tipo e endereço</th>
+                  <th>Gravidade</th>
+                  <th>Situação</th>
+                  <th>Viaturas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="oc : ${ocorrenciasAbertas}">
+                  <td><a class="prefixo" th:href="@{/ocorrencias/{id}/editar(id=${oc.id})}" th:text="'#' + ${oc.id}">#1</a></td>
+                  <td>
+                    <div th:text="${oc.tipo}">Incêndio em edificação</div>
+                    <div class="texto-fraco" th:text="${oc.endereco}">Rua tal, 100</div>
+                  </td>
+                  <td>
+                    <span class="selo" th:classappend="${oc.gravidade != null and oc.gravidade.name() == 'ALTA' ? 'selo-critico' : (oc.gravidade != null and oc.gravidade.name() == 'MEDIA' ? 'selo-atendimento' : 'selo-disponivel')}" th:text="${oc.gravidade != null ? oc.gravidade : '-'}">Alta</span>
+                  </td>
+                  <td>
+                    <span class="selo" th:classappend="${oc.status != null and (oc.status.name() == 'REGISTRADA' or oc.status.name() == 'NO_LOCAL' or oc.status.name() == 'EMPENHADA') ? 'selo-atendimento' : 'selo-indisponivel'}" th:text="${oc.status != null ? oc.status : '-'}">No local</span>
+                  </td>
+                  <td>
+                    <span th:each="v, iterStat : ${oc.viaturas}" class="prefixo" th:text="${v.prefixo} + (!${iterStat.last} ? ', ' : '')"></span>
+                    <span th:if="${oc.viaturas.empty}">-</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="vazio" th:if="${ocorrenciasAbertas == null or ocorrenciasAbertas.empty}">
+            <strong>Nenhuma ocorrência aberta</strong>
+          </div>
+        </div>
+
+        <div class="cartao">
+          <header>
+            <h2>Frota</h2>
+          </header>
+          <div class="corpo">
+            <div th:if="${viaturasAtivas != null and !viaturasAtivas.empty}">
+                <div class="recurso" th:each="v : ${viaturasAtivas}">
+                  <div class="info">
+                    <span class="prefixo" th:text="${v.prefixo}">ABT-01</span>
+                    <div class="texto-fraco" th:text="${v.tipo}">Auto Bomba Tanque</div>
+                  </div>
+                  <span class="selo" th:classappend="${v.status != null and v.status.name() == 'DISPONIVEL' ? 'selo-disponivel' : 'selo-indisponivel'}" th:text="${v.status != null ? v.status : '-'}">Disponível</span>
+                </div>
+            </div>
+            <div class="vazio" th:if="${viaturasAtivas == null or viaturasAtivas.empty}">
+              <strong>Nenhuma viatura cadastrada</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>
