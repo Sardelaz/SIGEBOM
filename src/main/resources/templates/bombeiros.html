@@ -29,6 +29,7 @@
         <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
         <a th:href="@{/bombeiros}" class="ativo" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
         <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+        <a th:href="@{/equipes}" sec:authorize="hasAuthority('ADMINISTRADOR')">Equipes</a>
         <p class="rotulo-barra">Gestão</p>
         <a th:href="@{/relatorios}">Relatórios</a>
       </nav>

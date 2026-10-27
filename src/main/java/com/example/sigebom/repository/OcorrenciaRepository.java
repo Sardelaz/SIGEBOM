@@ -20,9 +20,9 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
            "(:status IS NULL OR o.status = :status) AND " +
            "(:gravidade IS NULL OR o.gravidade = :gravidade)")
     Page<Ocorrencia> filtrarOcorrencias(
-            @Param("dataInicio") LocalDateTime dataInicio, 
-            @Param("dataFim") LocalDateTime dataFim, 
-            @Param("status") StatusOcorrencia status, 
-            @Param("gravidade") Gravidade gravidade, 
+            @Param("dataInicio") LocalDateTime dataInicio,
+            @Param("dataFim") LocalDateTime dataFim,
+            @Param("status") StatusOcorrencia status,
+            @Param("gravidade") Gravidade gravidade,
             Pageable pageable);
 }

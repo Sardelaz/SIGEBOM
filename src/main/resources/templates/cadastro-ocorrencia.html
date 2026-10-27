@@ -1,17 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title th:text="${ocorrencia.id == null ? 'Registrar Ocorrência - SIGEBOM' : 'Editar Ocorrência - SIGEBOM'}">Registrar
-    Ocorrência - SIGEBOM</title>
+  <title th:text="${ocorrencia.id == null ? 'Registrar Ocorrência - SIGEBOM' : 'Editar Ocorrência - SIGEBOM'}">Registrar Ocorrência - SIGEBOM</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" th:href="@{/estilo.css}">
 </head>
-
 <body>
   <div class="app">
     <aside class="barra">
@@ -22,17 +19,22 @@
           <span>1º Batalhão</span>
         </div>
       </div>
+
       <nav>
         <p class="rotulo-barra">Operação</p>
         <a th:href="@{/painel}">Painel</a>
-        <a th:href="@{/ocorrencias/nova}" class="ativo">Registrar ocorrência</a>
-        <a th:href="@{/ocorrencias}">Ocorrências</a>
+        <a th:href="@{/ocorrencias/nova}" th:classappend="${ocorrencia.id == null ? 'ativo' : ''}">Registrar ocorrência</a>
+        <a th:href="@{/ocorrencias}" th:classappend="${ocorrencia.id != null ? 'ativo' : ''}">Ocorrências</a>
+
         <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
         <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
         <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+        <a th:href="@{/equipes}" sec:authorize="hasAuthority('ADMINISTRADOR')">Equipes</a>
+
         <p class="rotulo-barra">Gestão</p>
         <a th:href="@{/relatorios}">Relatórios</a>
       </nav>
+
       <div class="barra-usuario">
         <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
         <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
@@ -43,16 +45,55 @@
     <div class="conteudo">
       <header class="topo">
         <p class="trilha-nav">Operação / Ocorrências / <b
-            th:text="${ocorrencia.id == null ? 'Nova' : 'Editar'}">Nova</b></p>
+            th:text="${ocorrencia.id == null ? 'Nova' : 'Editar #' + ocorrencia.id}">Nova</b></p>
       </header>
+
       <main>
         <div class="cabecalho-pagina">
-          <h1 th:text="${ocorrencia.id == null ? 'Registrar Ocorrência' : 'Editar Ocorrência'}">Registrar Ocorrência
-          </h1>
+          <h1 th:text="${ocorrencia.id == null ? 'Registrar Ocorrência' : 'Editar Ocorrência #' + ocorrencia.id}">Registrar Ocorrência</h1>
+        </div>
+
+        <!-- US08: Trilha de Timestamps das Mudanças de Status -->
+        <div class="trilha" th:if="${ocorrencia.id != null}" style="max-width: 860px; margin-bottom: 20px;">
+          <div class="etapa" th:classappend="${ocorrencia.horarioAcionamento != null ? 'concluida' : 'pendente'}">
+            <span class="nome">
+              Acionamento
+              <span class="editado" th:if="${ocorrencia.acionamentoEditado}">Editado</span>
+            </span>
+            <span class="hora" th:text="${ocorrencia.horarioAcionamento != null ? #temporals.format(ocorrencia.horarioAcionamento, 'HH:mm') : '--:--'}">--:--</span>
+            <span class="decorrido" th:text="${ocorrencia.horarioAcionamento != null ? #temporals.format(ocorrencia.horarioAcionamento, 'dd/MM/yyyy') : 'Pendente'}"></span>
+          </div>
+
+          <div class="etapa" th:classappend="${ocorrencia.horarioEmpenho != null ? 'concluida' : 'pendente'}">
+            <span class="nome">Empenho</span>
+            <span class="hora" th:text="${ocorrencia.horarioEmpenho != null ? #temporals.format(ocorrencia.horarioEmpenho, 'HH:mm') : '--:--'}">--:--</span>
+            <span class="decorrido" th:text="${ocorrencia.horarioEmpenho != null ? #temporals.format(ocorrencia.horarioEmpenho, 'dd/MM/yyyy') : 'Pendente'}"></span>
+          </div>
+
+          <div class="etapa" th:classappend="${ocorrencia.horarioDeslocamento != null ? 'concluida' : 'pendente'}">
+            <span class="nome">Deslocamento</span>
+            <span class="hora" th:text="${ocorrencia.horarioDeslocamento != null ? #temporals.format(ocorrencia.horarioDeslocamento, 'HH:mm') : '--:--'}">--:--</span>
+            <span class="decorrido" th:text="${ocorrencia.horarioDeslocamento != null ? #temporals.format(ocorrencia.horarioDeslocamento, 'dd/MM/yyyy') : 'Pendente'}"></span>
+          </div>
+
+          <div class="etapa" th:classappend="${ocorrencia.horarioNoLocal != null ? 'concluida' : 'pendente'}">
+            <span class="nome">No Local</span>
+            <span class="hora" th:text="${ocorrencia.horarioNoLocal != null ? #temporals.format(ocorrencia.horarioNoLocal, 'HH:mm') : '--:--'}">--:--</span>
+            <span class="decorrido" th:text="${ocorrencia.horarioNoLocal != null ? #temporals.format(ocorrencia.horarioNoLocal, 'dd/MM/yyyy') : 'Pendente'}"></span>
+          </div>
+
+          <div class="etapa" th:classappend="${ocorrencia.horarioEncerramento != null ? 'concluida' : 'pendente'}">
+            <span class="nome">Encerramento</span>
+            <span class="hora" th:text="${ocorrencia.horarioEncerramento != null ? #temporals.format(ocorrencia.horarioEncerramento, 'HH:mm') : '--:--'}">--:--</span>
+            <span class="decorrido" th:text="${ocorrencia.calcularTempoResposta() != null ? 'Resposta: ' + ocorrencia.calcularTempoResposta() + ' min' : 'Pendente'}"></span>
+          </div>
         </div>
 
         <form th:action="@{/ocorrencias}" th:object="${ocorrencia}" method="post" style="max-width: 860px;">
           <input type="hidden" th:field="*{id}">
+          <!-- US21: Campos internos/invisíveis que preservam o horário original da máquina e o log de auditoria -->
+          <input type="hidden" th:field="*{horarioAcionamentoOriginal}">
+          <input type="hidden" th:field="*{logAuditoriaInterno}">
 
           <fieldset>
             <legend>Informações da Ocorrência</legend>
@@ -62,19 +103,23 @@
                 <input type="text" id="tipo" th:field="*{tipo}" required
                   placeholder="Ex: Incêndio em residência, Acidente de trânsito...">
               </div>
+
               <div class="campo largo">
                 <label for="descricao">Descrição detalhada</label>
                 <textarea id="descricao" th:field="*{descricao}" rows="3"
                   placeholder="Detalhes adicionais relatados pelo solicitante..."></textarea>
               </div>
+
               <div class="campo">
                 <label for="endereco">Endereço</label>
                 <input type="text" id="endereco" th:field="*{endereco}" required placeholder="Rua, número, referências">
               </div>
+
               <div class="campo">
                 <label for="bairro">Bairro</label>
                 <input type="text" id="bairro" th:field="*{bairro}" required>
               </div>
+
               <div class="campo">
                 <label for="gravidade">Gravidade Inicial</label>
                 <select id="gravidade" th:field="*{gravidade}" required>
@@ -83,6 +128,24 @@
                   <option value="MEDIA">Média (Urgente)</option>
                   <option value="BAIXA">Baixa (Rotina)</option>
                 </select>
+              </div>
+
+              <div class="campo" th:if="${ocorrencia.id != null}">
+                <label for="status">Situação da Ocorrência</label>
+                <select id="status" th:field="*{status}">
+                  <option th:each="s : ${statusValues}" th:value="${s}" th:text="${s}"></option>
+                </select>
+              </div>
+
+              <!-- US21: Horário de acionamento automático na abertura e editável por Atendentes/Administradores -->
+              <div class="campo" th:classappend="${ocorrencia.id == null ? '' : 'largo'}">
+                <label for="horarioAcionamento">Horário de Acionamento</label>
+                <input type="datetime-local" id="horarioAcionamento" th:field="*{horarioAcionamento}"
+                  th:readonly="${!#authorization.expression('hasAnyAuthority(''ATENDENTE'', ''ADMINISTRADOR'')')}"
+                  required>
+                <span class="ajuda">
+                  Gerado automaticamente na abertura. Edição manual permitida para Atendentes (mantém rastro de auditoria interno).
+                </span>
               </div>
             </div>
           </fieldset>
@@ -97,7 +160,7 @@
                     <label class="marcavel" style="width: auto; padding: 6px 12px;">
                       <input type="checkbox" name="viaturaIds" th:value="${v.id}"
                         th:checked="${empenhadasIds.contains(v.id)}">
-                      <span th:text="${v.prefixo + ' - ' + v.tipo}"></span>
+                      <span th:text="${v.prefixo + ' - ' + (v.tipo != null ? v.tipo.rotulo : '')}"></span>
                     </label>
                   </th:block>
                   <span th:if="${viaturasOpcoes.empty}" class="ajuda">Nenhuma viatura disponível no momento.</span>
@@ -113,6 +176,7 @@
                 <label for="solicitante">Nome do Solicitante</label>
                 <input type="text" id="solicitante" th:field="*{solicitante}" required>
               </div>
+
               <div class="campo">
                 <label for="telefoneSolicitante">Telefone de Contato</label>
                 <input type="tel" id="telefoneSolicitante" th:field="*{telefoneSolicitante}" required
@@ -130,5 +194,4 @@
     </div>
   </div>
 </body>
-
 </html>

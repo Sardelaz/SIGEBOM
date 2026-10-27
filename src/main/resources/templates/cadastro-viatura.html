@@ -1,17 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title th:text="${viatura.id == null ? 'Cadastrar viatura - SIGEBOM' : 'Editar viatura - SIGEBOM'}">Cadastrar viatura
-    - SIGEBOM</title>
+  <title th:text="${viatura.id == null ? 'Cadastrar viatura - SIGEBOM' : 'Editar viatura - SIGEBOM'}">Cadastrar viatura - SIGEBOM</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" th:href="@{/estilo.css}">
 </head>
-
 <body>
   <div class="app">
     <aside class="barra">
@@ -22,17 +19,22 @@
           <span>1º Batalhão</span>
         </div>
       </div>
+
       <nav>
         <p class="rotulo-barra">Operação</p>
         <a th:href="@{/painel}">Painel</a>
         <a th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
         <a th:href="@{/ocorrencias}">Ocorrências</a>
+
         <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
         <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
         <a th:href="@{/viaturas}" class="ativo" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+        <a th:href="@{/equipes}" sec:authorize="hasAuthority('ADMINISTRADOR')">Equipes</a>
+
         <p class="rotulo-barra">Gestão</p>
         <a th:href="@{/relatorios}">Relatórios</a>
       </nav>
+
       <div class="barra-usuario">
         <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
         <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
@@ -44,12 +46,12 @@
       <header class="topo">
         <p class="trilha-nav">Cadastros / Frota / <b th:text="${viatura.id == null ? 'Nova' : 'Editar'}">Nova</b></p>
       </header>
+
       <main>
         <div class="cabecalho-pagina">
           <h1 th:text="${viatura.id == null ? 'Cadastrar viatura' : 'Editar viatura'}">Cadastrar viatura</h1>
         </div>
 
-        <!-- Formulário devidamente apontado para o objeto Viatura -->
         <form th:action="@{/viaturas}" th:object="${viatura}" method="post" style="max-width: 860px;">
           <input type="hidden" th:field="*{id}">
 
@@ -60,14 +62,23 @@
                 <label for="prefixo">Prefixo</label>
                 <input type="text" id="prefixo" th:field="*{prefixo}" placeholder="Ex: ABT-01" required>
               </div>
+
               <div class="campo">
                 <label for="tipo">Tipo da Viatura</label>
-                <input type="text" id="tipo" th:field="*{tipo}" placeholder="Ex: Auto Bomba Tanque" required>
+                <select id="tipo" th:field="*{tipo}" required>
+                  <option value="">Selecione o tipo</option>
+                  <option th:each="t : ${tiposViatura}"
+                          th:value="${t.name()}"
+                          th:text="${t.rotulo + ' (' + t.capacidade + ' lugares)'}">
+                  </option>
+                </select>
               </div>
+
               <div class="campo">
                 <label for="placa">Placa</label>
                 <input type="text" id="placa" th:field="*{placa}" placeholder="Ex: ABC-1234">
               </div>
+
               <div class="campo">
                 <label for="status">Situação Operacional</label>
                 <select id="status" th:field="*{status}" required>
@@ -89,5 +100,4 @@
     </div>
   </div>
 </body>
-
 </html>

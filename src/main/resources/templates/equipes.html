@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Equipes - SIGEBOM</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/estilo.css}">
+  <style>
+    .vagas-barra {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .vaga-item {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--linha);
+      transition: background .15s ease;
+    }
+    .vaga-item.ocupada {
+      background: var(--aco);
+    }
+    .vaga-item.cheia {
+      background: var(--laranja);
+    }
+    .form-acoplar-inline {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .form-acoplar-inline select {
+      flex: 1;
+      min-width: 0;
+      font: inherit;
+      color: var(--tinta);
+      padding: 8px 10px;
+      border: 1px solid var(--linha-forte);
+      border-radius: var(--raio);
+      background: var(--branco);
+    }
+    .chips-efetivo {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="barra">
+      <div class="barra-marca">
+        <img th:src="@{/logo.png}" alt="Logotipo do SIGEBOM">
+        <div>
+          <strong>SIGEBOM</strong>
+          <span>1º Batalhão</span>
+        </div>
+      </div>
+
+      <nav>
+        <p class="rotulo-barra">Operação</p>
+        <a th:href="@{/painel}">Painel</a>
+        <a th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
+        <a th:href="@{/ocorrencias}">Ocorrências</a>
+
+        <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
+        <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
+        <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+        <a th:href="@{/equipes}" class="ativo" sec:authorize="hasAuthority('ADMINISTRADOR')">Equipes</a>
+
+        <p class="rotulo-barra">Gestão</p>
+        <a th:href="@{/relatorios}">Relatórios</a>
+      </nav>
+
+      <div class="barra-usuario">
+        <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
+        <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
+        <a th:href="@{/logout}">Sair</a>
+      </div>
+    </aside>
+
+    <div class="conteudo">
+      <header class="topo">
+        <p class="trilha-nav">Cadastros / <b>Equipes</b></p>
+      </header>
+
+      <main>
+        <div class="cabecalho-pagina">
+          <div>
+            <h1>Equipes das Viaturas</h1>
+            <p>Gerencie a alocação e o remanejamento de bombeiros entre as guarnições da frota.</p>
+          </div>
+        </div>
+
+        <div class="aviso aviso-ok" th:if="${sucesso}" th:text="${sucesso}" role="status"></div>
+        <div class="aviso aviso-erro" th:if="${erro}" th:text="${erro}" role="alert"></div>
+
+        <!-- Grade de Viaturas e Guarnições -->
+        <section class="grade grade-2" th:if="${viaturas != null and !viaturas.empty}">
+          <div class="cartao" th:each="v : ${viaturas}">
+            <header>
+              <div>
+                <strong class="prefixo" th:text="${v.prefixo}">ABT-01</strong>
+                <div class="texto-fraco"
+                  th:text="${(v.tipo != null ? v.tipo.rotulo : '') + (v.placa != null and !v.placa.isBlank() ? ' • ' + v.placa : '')}">
+                  Caminhão • ABC-1234
+                </div>
+              </div>
+              <span class="selo"
+                th:classappend="${v.cheia ? 'selo-atendimento' : 'selo-disponivel'}"
+                th:text="${v.bombeiros.size() + ' / ' + v.capacidade + ' vagas'}">
+                0 / 7 vagas
+              </span>
+            </header>
+
+            <div class="corpo">
+              <!-- Indicador visual de vagas ocupadas -->
+              <div class="vagas-barra" th:if="${v.capacidade > 0}" aria-hidden="true">
+                <span th:each="i : ${#numbers.sequence(1, v.capacidade)}"
+                  class="vaga-item"
+                  th:classappend="${i <= v.bombeiros.size() ? (v.cheia ? 'cheia' : 'ocupada') : ''}">
+                </span>
+              </div>
+
+              <!-- Lista de bombeiros alocados na viatura -->
+              <div th:if="${!v.bombeiros.empty}">
+                <div class="recurso" th:each="b : ${v.bombeiros}">
+                  <div class="info">
+                    <strong th:text="${(b.postoGraduacao != null ? b.postoGraduacao + ' ' : '') + b.nome + (b.sobrenome != null ? ' ' + b.sobrenome : '')}">
+                      Soldado Fulano
+                    </strong>
+                    <div class="texto-fraco" th:if="${b.matriculaRe != null}" th:text="'RE: ' + ${b.matriculaRe}">
+                      RE: 000000
+                    </div>
+                  </div>
+                  <form th:action="@{/equipes/desacoplar}" method="post" style="margin: 0;">
+                    <input type="hidden" name="bombeiroId" th:value="${b.id}">
+                    <button type="submit" class="btn btn-texto btn-p" style="color: var(--st-critico);" title="Remover da viatura">
+                      Remover
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <div class="vazio" style="padding: 18px 10px;" th:if="${v.bombeiros.empty}">
+                <strong>Nenhum bombeiro alocado nesta viatura.</strong>
+              </div>
+
+              <!-- Formulário para acoplar bombeiro -->
+              <form th:action="@{/equipes/acoplar}" method="post" class="mt-16" style="border-top: 1px solid var(--linha); padding-top: 14px;">
+                <input type="hidden" name="viaturaId" th:value="${v.id}">
+                <div class="campo mb-0">
+                  <label th:for="'add-' + ${v.id}">Acoplar bombeiro à guarnição</label>
+                  <div class="form-acoplar-inline">
+                    <select th:id="'add-' + ${v.id}" name="bombeiroId" required th:disabled="${v.cheia}">
+                      <option value="">Selecione um bombeiro...</option>
+                      <option th:each="b : ${todosBombeiros}"
+                        th:if="${b.viatura == null or b.viatura.id != v.id}"
+                        th:value="${b.id}"
+                        th:text="${(b.postoGraduacao != null ? b.postoGraduacao + ' ' : '') + b.nome + (b.sobrenome != null ? ' ' + b.sobrenome : '') + (b.viatura != null ? ' (atual: ' + b.viatura.prefixo + ')' : ' (sem viatura)')}">
+                      </option>
+                    </select>
+                    <button type="submit" class="btn btn-acao" th:disabled="${v.cheia}">Acoplar</button>
+                  </div>
+                  <span class="ajuda" th:if="${v.cheia}">
+                    Capacidade máxima atingida. Remova um integrante ou utilize a troca abaixo.
+                  </span>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <div class="cartao" th:if="${viaturas == null or viaturas.empty}">
+          <div class="vazio">
+            <strong>Nenhuma viatura cadastrada na frota.</strong>
+            <span>Cadastre uma viatura na aba Frota para montar as equipes.</span>
+          </div>
+        </div>
+
+        <!-- Seção Inferior: Troca rápida e Efetivo sem viatura -->
+        <section class="grade grade-2-1 mt-24">
+          <div class="cartao">
+            <header>
+              <h2>Trocar Bombeiros de Lugar</h2>
+            </header>
+            <div class="corpo">
+              <p class="texto-fraco mt-0" style="margin-bottom: 16px;">
+                Permite permutar dois bombeiros diretamente entre suas viaturas, mesmo quando ambas estiverem com lotação máxima.
+              </p>
+              <form th:action="@{/equipes/trocar}" method="post">
+                <div class="grade-campos">
+                  <div class="campo">
+                    <label for="bombeiroA">Primeiro bombeiro</label>
+                    <select id="bombeiroA" name="bombeiroA" required>
+                      <option value="">Selecione...</option>
+                      <option th:each="b : ${todosBombeiros}"
+                        th:value="${b.id}"
+                        th:text="${(b.postoGraduacao != null ? b.postoGraduacao + ' ' : '') + b.nome + ' (' + (b.viatura != null ? b.viatura.prefixo : 'sem viatura') + ')'}">
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="campo">
+                    <label for="bombeiroB">Segundo bombeiro</label>
+                    <select id="bombeiroB" name="bombeiroB" required>
+                      <option value="">Selecione...</option>
+                      <option th:each="b : ${todosBombeiros}"
+                        th:value="${b.id}"
+                        th:text="${(b.postoGraduacao != null ? b.postoGraduacao + ' ' : '') + b.nome + ' (' + (b.viatura != null ? b.viatura.prefixo : 'sem viatura') + ')'}">
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="acoes-linha">
+                  <button type="submit" class="btn btn-acao">Realizar troca</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="cartao">
+            <header>
+              <h2>Sem Viatura</h2>
+              <span class="selo selo-neutro" th:text="${semViatura != null ? semViatura.size() : 0}">0</span>
+            </header>
+            <div class="corpo">
+              <div class="vazio" style="padding: 18px 10px;" th:if="${semViatura == null or semViatura.empty}">
+                <strong>Todos os bombeiros estão alocados em viaturas.</strong>
+              </div>
+              <ul class="chips-efetivo" th:if="${semViatura != null and !semViatura.empty}">
+                <li th:each="b : ${semViatura}">
+                  <span class="selo selo-indisponivel"
+                    th:text="${(b.postoGraduacao != null ? b.postoGraduacao + ' ' : '') + b.nome + (b.sobrenome != null ? ' ' + b.sobrenome : '')}">
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

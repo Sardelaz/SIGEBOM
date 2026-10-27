@@ -1,5 +1,6 @@
 package com.example.sigebom.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,10 +12,13 @@ import com.example.sigebom.model.Bombeiro;
 
 @Repository
 public interface BombeiroRepository extends JpaRepository<Bombeiro, Long> {
-    
-    // Busca o usuário verificando se o valor digitado bate com o E-mail OU com o CPF
+
+    Optional<Bombeiro> findByEmail(String email);
+
     @Query("SELECT b FROM Bombeiro b WHERE b.email = :identificador OR b.cpf = :identificador")
     Optional<Bombeiro> findByIdentificador(@Param("identificador") String identificador);
-    
-    Optional<Bombeiro> findByEmail(String email);
+
+    List<Bombeiro> findByViaturaIsNullOrderByNome();
+
+    long countByViaturaId(Long viaturaId);
 }

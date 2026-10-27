@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.sigebom.model.Viatura;
+import com.example.sigebom.model.enums.TipoViatura;
 import com.example.sigebom.repository.ViaturaRepository;
 
 @Controller
@@ -23,6 +24,11 @@ public class ViaturaController {
         this.repository = repository;
     }
 
+    @ModelAttribute("tiposViatura")
+    public TipoViatura[] tiposViatura() {
+        return TipoViatura.values();
+    }
+
     @GetMapping
     public String listar(Model model) {
         model.addAttribute("viaturas", repository.findAll());
@@ -31,22 +37,31 @@ public class ViaturaController {
 
     @GetMapping("/nova")
     public String novaForm(Model model) {
-        // Envia uma viatura vazia para o formulário no cadastro novo
         model.addAttribute("viatura", new Viatura());
+        model.addAttribute("tiposViatura", TipoViatura.values());
         return "cadastro-viatura";
     }
 
     @GetMapping("/{id}")
     public String editarForm(@PathVariable("id") Long id, Model model) {
-        // Envia a viatura preenchida para o formulário na edição
+        if (id == null) {
+            return "redirect:/viaturas";
+        }
         Viatura viatura = repository.findById(id).orElseThrow();
         model.addAttribute("viatura", viatura);
+        model.addAttribute("tiposViatura", TipoViatura.values());
         return "cadastro-viatura";
     }
 
     @PostMapping
     public String salvar(@ModelAttribute Viatura viatura) {
         if (viatura != null) {
+            if (viatura.getId() != null) {
+                Viatura existente = repository.findById(viatura.getId()).orElse(null);
+                if (existente != null) {
+                    viatura.setAtivo(existente.isAtivo());
+                }
+            }
             repository.save(viatura);
         }
         return "redirect:/viaturas";

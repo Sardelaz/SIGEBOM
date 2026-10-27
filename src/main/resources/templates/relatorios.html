@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Relatórios - SIGEBOM</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/estilo.css}">
+</head>
+<body>
+  <div class="app">
+    <aside class="barra">
+      <div class="barra-marca">
+        <img th:src="@{/logo.png}" alt="Logotipo do SIGEBOM">
+        <div>
+          <strong>SIGEBOM</strong>
+          <span>1º Batalhão</span>
+        </div>
+      </div>
+
+      <nav>
+        <p class="rotulo-barra">Operação</p>
+        <a th:href="@{/painel}">Painel</a>
+        <a th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
+        <a th:href="@{/ocorrencias}">Ocorrências</a>
+
+        <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
+        <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
+        <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+        <a th:href="@{/equipes}" sec:authorize="hasAuthority('ADMINISTRADOR')">Equipes</a>
+
+        <p class="rotulo-barra">Gestão</p>
+        <a th:href="@{/relatorios}" class="ativo">Relatórios</a>
+      </nav>
+
+      <div class="barra-usuario">
+        <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
+        <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
+        <a th:href="@{/logout}">Sair</a>
+      </div>
+    </aside>
+
+    <div class="conteudo">
+      <header class="topo">
+        <p class="trilha-nav">Gestão / Relatórios</p>
+      </header>
+
+      <main>
+        <div class="cabecalho-pagina">
+          <h1>Relatórios de Tempo de Resposta</h1>
+        </div>
+
+        <div class="cartao">
+          <form class="filtros" th:action="@{/relatorios}" method="get">
+            <div class="campo">
+              <label for="de">De</label>
+              <input type="date" id="de" name="de" th:value="${param.de != null ? param.de : dataPadraoInicio}">
+            </div>
+
+            <div class="campo">
+              <label for="ate">Até</label>
+              <input type="date" id="ate" name="ate" th:value="${param.ate != null ? param.ate : dataPadraoFim}">
+            </div>
+
+            <div class="campo">
+              <label for="gravidade">Gravidade</label>
+              <select id="gravidade" name="gravidade">
+                <option value="">Todas</option>
+                <option value="ALTA" th:selected="${#strings.equals(param.gravidade, 'ALTA')}">Alta</option>
+                <option value="MEDIA" th:selected="${#strings.equals(param.gravidade, 'MEDIA')}">Média</option>
+                <option value="BAIXA" th:selected="${#strings.equals(param.gravidade, 'BAIXA')}">Baixa</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn">Filtrar</button>
+          </form>
+        </div>
+
+        <!-- US30 / US08: Indicadores Consolidados -->
+        <section class="grade grade-4 mt-24">
+          <div class="indicador laranja">
+            <span class="rotulo">Ocorrências no período</span>
+            <span class="numero-grande" th:text="${totalOcorrencias}">0</span>
+            <span class="nota">todas as situações</span>
+          </div>
+
+          <div class="indicador verde">
+            <span class="rotulo">Finalizadas</span>
+            <span class="numero-grande" th:text="${totalFinalizadas}">0</span>
+            <span class="nota">com tempo de resposta apurado</span>
+          </div>
+
+          <div class="indicador carmim">
+            <span class="rotulo">Tempo médio de resposta</span>
+            <span class="numero-grande" th:text="${tempoMedio + ' min'}">0 min</span>
+            <span class="nota">baseado nos timestamps de status</span>
+          </div>
+
+          <div class="indicador">
+            <span class="rotulo">Menor / maior tempo</span>
+            <span class="numero-grande" th:text="${menorTempo + ' / ' + maiorTempo}">0 / 0</span>
+            <span class="nota">em minutos</span>
+          </div>
+        </section>
+
+        <section class="grade mt-24">
+          <!-- US08: Lista de ocorrências filtradas por data com cálculo de tempo de resposta -->
+          <div class="cartao">
+            <header>
+              <h2>Tempo de resposta por ocorrência</h2>
+            </header>
+            <div class="envolve-tabela" th:if="${!atendidas.empty}">
+              <table class="tabela">
+                <thead>
+                  <tr>
+                    <th>Nº</th>
+                    <th>Tipo e bairro</th>
+                    <th>Gravidade</th>
+                    <th>Acionamento</th>
+                    <th>Encerramento</th>
+                    <th class="direita">Tempo de Resposta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="oc : ${atendidas}">
+                    <td><a class="prefixo" th:href="@{/ocorrencias/{id}/editar(id=${oc.id})}" th:text="'#' + ${oc.id}">#1</a></td>
+                    <td>
+                      <div th:text="${oc.tipo}">Incêndio em edificação</div>
+                      <div class="texto-fraco" th:text="${oc.bairro}">Centro</div>
+                    </td>
+                    <td>
+                      <span class="selo"
+                            th:classappend="${oc.gravidade != null and oc.gravidade.name() == 'ALTA' ? 'selo-critico' : (oc.gravidade != null and oc.gravidade.name() == 'MEDIA' ? 'selo-atendimento' : 'selo-disponivel')}"
+                            th:text="${oc.gravidade}">Alta</span>
+                    </td>
+                    <td class="num nowrap" th:text="${oc.horarioAcionamento != null ? #temporals.format(oc.horarioAcionamento, 'dd/MM/yyyy HH:mm') : '-'}">03/09/2026 13:42</td>
+                    <td class="num nowrap" th:text="${oc.horarioEncerramento != null ? #temporals.format(oc.horarioEncerramento, 'dd/MM/yyyy HH:mm') : (oc.horarioNoLocal != null ? #temporals.format(oc.horarioNoLocal, 'dd/MM/yyyy HH:mm') : '-')}">03/09/2026 14:10</td>
+                    <td class="num direita nowrap"><strong th:text="${oc.calcularTempoResposta() + ' min'}">28 min</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="vazio" th:if="${atendidas.empty}">
+              <strong>Nenhuma ocorrência finalizada no período</strong>
+            </div>
+          </div>
+
+          <div class="cartao">
+            <header>
+              <h2>Eficiência por gravidade</h2>
+            </header>
+            <div class="envolve-tabela">
+              <table class="tabela">
+                <thead>
+                  <tr>
+                    <th>Gravidade</th>
+                    <th class="direita">Ocorrências</th>
+                    <th class="direita">Finalizadas</th>
+                    <th class="direita">Tempo médio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="linha : ${porGravidade}">
+                    <td>
+                      <span class="selo"
+                            th:classappend="${linha.gravidade.name() == 'ALTA' ? 'selo-critico' : (linha.gravidade.name() == 'MEDIA' ? 'selo-atendimento' : 'selo-disponivel')}"
+                            th:text="${linha.gravidade}">Alta</span>
+                    </td>
+                    <td class="num direita" th:text="${linha.total}">0</td>
+                    <td class="num direita" th:text="${linha.finalizadas}">0</td>
+                    <td class="num direita nowrap" th:text="${linha.tempoMedio != null ? linha.tempoMedio + ' min' : '-'}">-</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

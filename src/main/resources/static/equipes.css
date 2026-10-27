@@ -1,0 +1,65 @@
+/* Usa as cores do styles.css do projeto: #092b2c (escuro), #3A7D52 / #47a35d (verde), #fbfbe3 (fundo) */
+.equipes-pagina { align-items: flex-start; }
+.equipes-conteudo { width: 100%; max-width: 1200px; align-items: stretch; }
+.equipes-conteudo h2 { font-size: 1.15rem; margin: 0; }
+
+.aviso { padding: 12px 16px; border-radius: 8px; margin: 0 0 20px; width: 100%; box-sizing: border-box; }
+.aviso-sucesso { background: #dcefd9; color: #1f5a33; border: 1px solid #99C48F; }
+.aviso-erro { background: #f7dcd7; color: #7a2418; border: 1px solid #d99a8f; }
+
+.grade-viaturas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+.viatura {
+    background: #fff;
+    border: 1px solid #d9d9bf;
+    border-radius: 10px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.viatura-cheia { border-color: #3A7D52; border-width: 2px; }
+
+.viatura-topo { display: flex; justify-content: space-between; align-items: flex-start; background: none; height: auto; }
+.viatura-tipo { margin: 2px 0 0; font-size: 14px; }
+.ocupacao { margin: 0; font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 700; color: #092b2c; }
+
+.vagas { display: flex; gap: 6px; }
+.vaga { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #3A7D52; box-sizing: border-box; }
+.vaga-ocupada { background: #3A7D52; }
+
+.lista-bombeiros { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.lista-bombeiros li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #ececd6; }
+.lista-bombeiros .nome { font-weight: 500; flex: 1; }
+.lista-bombeiros .vazio { color: #8a8a78; border-bottom: none; }
+.form-linha { display: block; margin: 0; }
+
+.btn-secundario { background: transparent; color: #7a2418; border: 1px solid #d99a8f; padding: 6px 10px; font-size: 14px; }
+.btn-secundario:hover { background: #f7dcd7; }
+
+.form-acoplar { gap: 6px; }
+.form-acoplar label, .linha-troca label { font-weight: 500; font-size: 14px; }
+.linha-acoplar { display: flex; gap: 8px; }
+.linha-acoplar select { flex: 1; min-width: 0; }
+
+select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; background: #fff; color: #333; }
+button:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
+button:focus-visible, select:focus-visible { outline: 3px solid #47a35d; outline-offset: 2px; }
+
+.bloco-troca, .bloco-sem-viatura { margin-top: 36px; width: 100%; }
+.bloco-troca p { margin: 4px 0 14px; }
+.linha-troca { flex-direction: row; align-items: flex-end; flex-wrap: wrap; gap: 14px; }
+.linha-troca > div { display: flex; flex-direction: column; gap: 6px; min-width: 220px; }
+
+.chips { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chips li { background: #e5e5c9; border-radius: 999px; padding: 6px 14px; font-size: 14px; }
+
+@media (max-width: 768px) {
+    .equipes-conteudo { max-width: 100%; }
+    .linha-troca > div { min-width: 100%; }
+}

@@ -11,23 +11,28 @@
 <div class="app">
   <aside class="barra">
     <div class="barra-marca">
-      <img th:src="@{/logo.png}" alt="">
+      <img th:src="@{/logo.png}" alt="Logotipo do SIGEBOM">
       <div>
         <strong>SIGEBOM</strong>
         <span>1º Batalhão</span>
       </div>
     </div>
+
     <nav>
       <p class="rotulo-barra">Operação</p>
       <a th:href="@{/painel}">Painel</a>
       <a th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
       <a th:href="@{/ocorrencias}" class="ativo">Ocorrências</a>
+
       <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
       <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
       <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+      <a th:href="@{/equipes}" sec:authorize="hasAuthority('ADMINISTRADOR')">Equipes</a>
+
       <p class="rotulo-barra">Gestão</p>
       <a th:href="@{/relatorios}">Relatórios</a>
     </nav>
+
     <div class="barra-usuario">
       <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
       <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
@@ -39,6 +44,7 @@
     <header class="topo">
       <p class="trilha-nav">Ocorrências</p>
     </header>
+
     <main>
       <div class="cabecalho-pagina">
         <h1>Ocorrências</h1>
@@ -93,36 +99,43 @@
               </tr>
             </thead>
             <tbody>
-              <tr th:each="oc : ${ocorrencias.content}">
+              <tr th:each="oc : ${ocorrencias.content}"
+                  th:attr="data-horario-original=${oc.horarioAcionamentoOriginal != null ? #temporals.format(oc.horarioAcionamentoOriginal, 'dd/MM/yyyy HH:mm') : ''}">
                 <td><a class="prefixo" th:href="@{/ocorrencias/{id}/editar(id=${oc.id})}" th:text="'#' + ${oc.id}">#1</a></td>
-                <td class="num nowrap" th:text="${#temporals.format(oc.horarioAcionamento, 'dd/MM/yyyy HH:mm')}">03/09/2026 13:42</td>
+                <td class="num nowrap">
+                  <span th:text="${oc.horarioAcionamento != null ? #temporals.format(oc.horarioAcionamento, 'dd/MM/yyyy HH:mm') : '-'}">03/09/2026 13:42</span>
+                </td>
                 <td>
                   <div th:text="${oc.tipo}">Incêndio em edificação</div>
                   <div class="texto-fraco" th:text="${oc.endereco + (oc.bairro != null ? ' - ' + oc.bairro : '')}">Rua tal, 100</div>
                 </td>
                 <td>
-                    <span class="selo" th:classappend="${oc.gravidade.name() == 'ALTA' ? 'selo-critico' : (oc.gravidade.name() == 'MEDIA' ? 'selo-atendimento' : 'selo-disponivel')}" th:text="${oc.gravidade}">Alta</span>
+                  <span class="selo"
+                        th:classappend="${oc.gravidade != null and oc.gravidade.name() == 'ALTA' ? 'selo-critico' : (oc.gravidade != null and oc.gravidade.name() == 'MEDIA' ? 'selo-atendimento' : 'selo-disponivel')}"
+                        th:text="${oc.gravidade}">Alta</span>
                 </td>
                 <td>
-                    <span class="selo" th:classappend="${oc.status.name() == 'REGISTRADA' or oc.status.name() == 'NO_LOCAL' or oc.status.name() == 'EMPENHADA' ? 'selo-atendimento' : (oc.status.name() == 'FINALIZADA' ? 'selo-disponivel' : 'selo-indisponivel')}" th:text="${oc.status}">No local</span>
+                  <span class="selo"
+                        th:classappend="${oc.status != null and (oc.status.name() == 'REGISTRADA' or oc.status.name() == 'NO_LOCAL' or oc.status.name() == 'EMPENHADA' or oc.status.name() == 'EM_DESLOCAMENTO') ? 'selo-atendimento' : (oc.status != null and oc.status.name() == 'FINALIZADA' ? 'selo-disponivel' : 'selo-indisponivel')}"
+                        th:text="${oc.status}">No local</span>
                 </td>
                 <td>
-                    <span th:each="v, iterStat : ${oc.viaturas}" class="prefixo" th:text="${v.prefixo} + (!${iterStat.last} ? ', ' : '')"></span>
-                    
-                    <form th:action="@{/ocorrencias/despacho}" method="post" th:if="${oc.viaturas.empty}" style="display:flex; gap: 5px;">
-                        <input type="hidden" name="id" th:value="${oc.id}">
-                        <select name="viaturaId" required style="padding: 4px; font-size: 12px; border-radius: 4px; border: 1px solid var(--linha-forte);">
-                            <option value="">Despachar...</option>
-                            <option th:each="v : ${viaturasDisponiveis}" th:value="${v.id}" th:text="${v.prefixo}"></option>
-                        </select>
-                        <button type="submit" class="btn btn-acao btn-p">OK</button>
-                    </form>
+                  <span th:each="v, iterStat : ${oc.viaturas}" class="prefixo" th:text="${v.prefixo} + (!${iterStat.last} ? ', ' : '')"></span>
+
+                  <form th:action="@{/ocorrencias/despacho}" method="post" th:if="${oc.viaturas.empty and oc.status.name() != 'FINALIZADA' and oc.status.name() != 'CANCELADA'}" style="display:flex; gap: 5px;">
+                    <input type="hidden" name="id" th:value="${oc.id}">
+                    <select name="viaturaId" required style="padding: 4px; font-size: 12px; border-radius: 4px; border: 1px solid var(--linha-forte);">
+                      <option value="">Despachar...</option>
+                      <option th:each="v : ${viaturasDisponiveis}" th:value="${v.id}" th:text="${v.prefixo}"></option>
+                    </select>
+                    <button type="submit" class="btn btn-acao btn-p">OK</button>
+                  </form>
                 </td>
                 <td class="direita">
                   <a class="btn btn-texto btn-p" th:href="@{/ocorrencias/{id}/editar(id=${oc.id})}">Editar</a>
-                  <a class="btn btn-texto btn-p" style="color: var(--st-disponivel);" 
-                      th:if="${oc.status.name() != 'FINALIZADA' and oc.status.name() != 'CANCELADA'}" 
-                      th:href="@{/ocorrencias/{id}/boletim(id=${oc.id})}">Finalizar</a>
+                  <a class="btn btn-texto btn-p" style="color: var(--st-disponivel);"
+                     th:if="${oc.status != null and oc.status.name() != 'FINALIZADA' and oc.status.name() != 'CANCELADA'}"
+                     th:href="@{/ocorrencias/{id}/boletim(id=${oc.id})}">Finalizar</a>
                 </td>
               </tr>
             </tbody>

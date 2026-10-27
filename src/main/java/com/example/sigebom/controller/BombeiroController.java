@@ -29,7 +29,7 @@ public class BombeiroController {
     @GetMapping
     public String listar(Model model) {
         model.addAttribute("bombeiros", repository.findAll());
-        return "bombeiros"; 
+        return "bombeiros";
     }
 
     @GetMapping("/novo")
@@ -40,6 +40,9 @@ public class BombeiroController {
 
     @GetMapping("/{id}")
     public String editarForm(@PathVariable("id") Long id, Model model) {
+        if (id == null) {
+            return "redirect:/bombeiros";
+        }
         Bombeiro bombeiro = repository.findById(id).orElseThrow();
         model.addAttribute("bombeiro", bombeiro);
         return "cadastro-bombeiro";
@@ -47,27 +50,30 @@ public class BombeiroController {
 
     @PostMapping
     public String salvar(@ModelAttribute Bombeiro bombeiro) {
-        if (bombeiro == null) return "redirect:/bombeiros";
+        if (bombeiro == null) {
+            return "redirect:/bombeiros";
+        }
 
         Long id = bombeiro.getId();
         if (id != null) {
             Bombeiro existente = repository.findById(id).orElseThrow();
-            // US2 e US3: Atualização de senha pelo admin usando Hash
             if (bombeiro.getSenha() == null || bombeiro.getSenha().isBlank()) {
                 bombeiro.setSenha(existente.getSenha());
             } else {
                 bombeiro.setSenha(passwordEncoder.encode(bombeiro.getSenha()));
             }
+            bombeiro.setViatura(existente.getViatura());
+            bombeiro.setAtivo(existente.isAtivo());
         } else {
             if (bombeiro.getSenha() != null) {
                 bombeiro.setSenha(passwordEncoder.encode(bombeiro.getSenha()));
             }
         }
-        
+
         repository.save(bombeiro);
         return "redirect:/bombeiros";
     }
-    
+
     @PostMapping("/{id}/inativar")
     public String inativar(@PathVariable("id") Long id) {
         if (id != null) {

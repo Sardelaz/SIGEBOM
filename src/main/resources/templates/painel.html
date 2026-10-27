@@ -11,23 +11,28 @@
 <div class="app">
   <aside class="barra">
     <div class="barra-marca">
-      <img th:src="@{/logo.png}" alt="">
+      <img th:src="@{/logo.png}" alt="Logotipo do SIGEBOM">
       <div>
         <strong>SIGEBOM</strong>
         <span>1º Batalhão</span>
       </div>
     </div>
+
     <nav>
       <p class="rotulo-barra">Operação</p>
       <a th:href="@{/painel}" class="ativo">Painel</a>
       <a th:href="@{/ocorrencias/nova}">Registrar ocorrência</a>
       <a th:href="@{/ocorrencias}">Ocorrências</a>
+
       <p class="rotulo-barra" sec:authorize="hasAuthority('ADMINISTRADOR')">Cadastros</p>
       <a th:href="@{/bombeiros}" sec:authorize="hasAuthority('ADMINISTRADOR')">Efetivo</a>
       <a th:href="@{/viaturas}" sec:authorize="hasAuthority('ADMINISTRADOR')">Frota</a>
+      <a th:href="@{/equipes}" sec:authorize="hasAuthority('ADMINISTRADOR')">Equipes</a>
+
       <p class="rotulo-barra">Gestão</p>
       <a th:href="@{/relatorios}">Relatórios</a>
     </nav>
+
     <div class="barra-usuario">
       <p class="nome" sec:authentication="principal.nome">Nome do Usuário</p>
       <p class="perfil" sec:authentication="principal.perfil">Perfil</p>
@@ -39,6 +44,7 @@
     <header class="topo">
       <p class="trilha-nav">Painel do plantão</p>
     </header>
+
     <main>
       <div class="cabecalho-pagina">
         <h1>Painel do plantão</h1>
@@ -51,20 +57,23 @@
           <span class="numero-grande" th:text="${totalAbertas != null ? totalAbertas : '0'}">0</span>
           <span class="nota">status diferente de finalizada e cancelada</span>
         </div>
+
         <div class="indicador verde">
           <span class="rotulo">Viaturas disponíveis</span>
           <span class="numero-grande" th:text="${viaturasDisponiveis != null ? viaturasDisponiveis : '0'}">0</span>
           <span class="nota">viaturas com status Disponível</span>
         </div>
+
         <div class="indicador">
           <span class="rotulo">Efetivo disponível</span>
           <span class="numero-grande" th:text="${efetivoDisponivel != null ? efetivoDisponivel : '0'}">0</span>
           <span class="nota">bombeiros ativos e livres</span>
         </div>
+
         <div class="indicador carmim">
           <span class="rotulo">Tempo médio de resposta</span>
           <span class="numero-grande" th:text="${tempoMedio != null ? tempoMedio + ' min' : '0 min'}">0 min</span>
-          <span class="nota">do acionamento até a chegada ao local</span>
+          <span class="nota">do acionamento ao encerramento, últimos 30 dias</span>
         </div>
       </section>
 
@@ -72,9 +81,9 @@
         <div class="cartao">
           <header>
             <h2>Ocorrências em atendimento</h2>
-            <!-- Passando parâmetros vazios para contornar o bloqueio de "dia atual" do Controller -->
             <a th:href="@{/ocorrencias(de='',ate='')}">Ver todas</a>
           </header>
+
           <div class="envolve-tabela" th:if="${ocorrenciasAbertas != null and !ocorrenciasAbertas.empty}">
             <table class="tabela">
               <thead>
@@ -97,7 +106,7 @@
                     <span class="selo" th:classappend="${oc.gravidade != null and oc.gravidade.name() == 'ALTA' ? 'selo-critico' : (oc.gravidade != null and oc.gravidade.name() == 'MEDIA' ? 'selo-atendimento' : 'selo-disponivel')}" th:text="${oc.gravidade != null ? oc.gravidade : '-'}">Alta</span>
                   </td>
                   <td>
-                    <span class="selo" th:classappend="${oc.status != null and (oc.status.name() == 'REGISTRADA' or oc.status.name() == 'NO_LOCAL' or oc.status.name() == 'EMPENHADA') ? 'selo-atendimento' : 'selo-indisponivel'}" th:text="${oc.status != null ? oc.status : '-'}">No local</span>
+                    <span class="selo" th:classappend="${oc.status != null and (oc.status.name() == 'REGISTRADA' or oc.status.name() == 'NO_LOCAL' or oc.status.name() == 'EMPENHADA' or oc.status.name() == 'EM_DESLOCAMENTO') ? 'selo-atendimento' : 'selo-indisponivel'}" th:text="${oc.status != null ? oc.status : '-'}">No local</span>
                   </td>
                   <td>
                     <span th:each="v, iterStat : ${oc.viaturas}" class="prefixo" th:text="${v.prefixo} + (!${iterStat.last} ? ', ' : '')"></span>
@@ -107,6 +116,7 @@
               </tbody>
             </table>
           </div>
+
           <div class="vazio" th:if="${ocorrenciasAbertas == null or ocorrenciasAbertas.empty}">
             <strong>Nenhuma ocorrência aberta</strong>
           </div>
@@ -118,14 +128,15 @@
           </header>
           <div class="corpo">
             <div th:if="${viaturasAtivas != null and !viaturasAtivas.empty}">
-                <div class="recurso" th:each="v : ${viaturasAtivas}">
-                  <div class="info">
-                    <span class="prefixo" th:text="${v.prefixo}">ABT-01</span>
-                    <div class="texto-fraco" th:text="${v.tipo}">Auto Bomba Tanque</div>
-                  </div>
-                  <span class="selo" th:classappend="${v.status != null and v.status.name() == 'DISPONIVEL' ? 'selo-disponivel' : 'selo-indisponivel'}" th:text="${v.status != null ? v.status : '-'}">Disponível</span>
+              <div class="recurso" th:each="v : ${viaturasAtivas}">
+                <div class="info">
+                  <span class="prefixo" th:text="${v.prefixo}">ABT-01</span>
+                  <div class="texto-fraco" th:text="${v.tipo != null ? v.tipo.rotulo : '-'}">Caminhão</div>
                 </div>
+                <span class="selo" th:classappend="${v.status != null and v.status.name() == 'DISPONIVEL' ? 'selo-disponivel' : 'selo-indisponivel'}" th:text="${v.status != null ? v.status : '-'}">Disponível</span>
+              </div>
             </div>
+
             <div class="vazio" th:if="${viaturasAtivas == null or viaturasAtivas.empty}">
               <strong>Nenhuma viatura cadastrada</strong>
             </div>

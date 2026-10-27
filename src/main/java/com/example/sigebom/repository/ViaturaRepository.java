@@ -10,7 +10,6 @@ import com.example.sigebom.model.enums.StatusViatura;
 
 @Repository
 public interface ViaturaRepository extends JpaRepository<Viatura, Long> {
-    
-    // Busca viaturas que não estão inativadas e que possuam um status exato (ex: DISPONIVEL)
+
     List<Viatura> findByAtivoTrueAndStatus(StatusViatura status);
 }

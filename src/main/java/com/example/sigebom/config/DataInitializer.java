@@ -22,10 +22,10 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         String emailAdmin = "admin@sigebom.com.br";
-        
+
         // Puxa o admin existente ou cria um novo se não existir
         Bombeiro admin = repository.findByEmail(emailAdmin).orElse(new Bombeiro());
-        
+
         admin.setNome("Administrador");
         admin.setSobrenome("Sistema");
         admin.setCpf("000.000.000-00");
@@ -33,10 +33,10 @@ public class DataInitializer implements CommandLineRunner {
         admin.setPostoGraduacao("Coronel");
         admin.setTelefone("(00) 00000-0000");
         admin.setEmail(emailAdmin);
-        
+
         // Regrava a senha com a criptografia correta garantida
-        admin.setSenha(passwordEncoder.encode("admin123")); 
-        
+        admin.setSenha(passwordEncoder.encode("admin123"));
+
         admin.setPerfil(PerfilAcesso.ADMINISTRADOR);
         admin.setAtivo(true);
 
