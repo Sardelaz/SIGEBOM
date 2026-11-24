@@ -2,6 +2,7 @@ package com.example.sigebom.model;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,22 +39,17 @@ public class Ocorrencia {
     @Enumerated(EnumType.STRING)
     private Gravidade gravidade;
 
-    // US21: Horário de acionamento (automático na abertura e editável por Atendente/Admin)
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime horarioAcionamento;
 
-    // US21: Horário original gerado pela máquina na abertura (rastro de auditoria interno)
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime horarioAcionamentoOriginal;
 
-    // US21: Indica se o horário de acionamento sofreu edição manual
     private boolean acionamentoEditado = false;
 
-    // US21: Log invisível/interno mantendo o rastro completo das edições de horário
     @Column(columnDefinition = "TEXT")
     private String logAuditoriaInterno;
 
-    // US08: Timestamps registrados nas mudanças de status
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime horarioEmpenho;
 
@@ -86,14 +82,11 @@ public class Ocorrencia {
     public Ocorrencia() {
     }
 
-    /**
-     * US08: Registra automaticamente o timestamp correspondente à mudança de status.
-     */
     public void registrarMudancaStatus(StatusOcorrencia novoStatus) {
         if (novoStatus == null) {
             return;
         }
-        LocalDateTime agora = LocalDateTime.now().withSecond(0).withNano(0);
+        LocalDateTime agora = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
         this.status = novoStatus;
 
         switch (novoStatus) {
@@ -108,30 +101,16 @@ public class Ocorrencia {
                 }
             }
             case EM_DESLOCAMENTO -> {
-                if (this.horarioEmpenho == null) {
-                    this.horarioEmpenho = agora;
-                }
                 if (this.horarioDeslocamento == null) {
                     this.horarioDeslocamento = agora;
                 }
             }
             case NO_LOCAL -> {
-                if (this.horarioEmpenho == null) {
-                    this.horarioEmpenho = agora;
-                }
-                if (this.horarioDeslocamento == null) {
-                    this.horarioDeslocamento = agora;
-                }
                 if (this.horarioNoLocal == null) {
                     this.horarioNoLocal = agora;
                 }
             }
-            case FINALIZADA -> {
-                if (this.horarioEncerramento == null) {
-                    this.horarioEncerramento = agora;
-                }
-            }
-            case CANCELADA -> {
+            case FINALIZADA, CANCELADA -> {
                 if (this.horarioEncerramento == null) {
                     this.horarioEncerramento = agora;
                 }
@@ -139,9 +118,24 @@ public class Ocorrencia {
         }
     }
 
-    /**
-     * US08: Calcula o tempo de resposta em minutos baseado nos timestamps registrados nas mudanças de status.
-     */
+    public StatusOcorrencia getProximoStatusSequencial() {
+        return this.status != null ? this.status.getProximoSequencial() : null;
+    }
+
+    public String getRotuloProximoStatus() {
+        return this.status != null ? this.status.getRotuloAcaoProxima() : null;
+    }
+
+    public boolean isPodeFinalizar() {
+        return this.status == StatusOcorrencia.NO_LOCAL;
+    }
+
+    public boolean isEmAberto() {
+        return this.status != null
+                && this.status != StatusOcorrencia.FINALIZADA
+                && this.status != StatusOcorrencia.CANCELADA;
+    }
+
     public Long calcularTempoResposta() {
         if (horarioAcionamento == null) {
             return null;

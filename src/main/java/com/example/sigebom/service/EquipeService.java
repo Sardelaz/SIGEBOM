@@ -4,13 +4,12 @@ import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.sigebom.model.Bombeiro;
 import com.example.sigebom.model.Viatura;
 import com.example.sigebom.repository.BombeiroRepository;
 import com.example.sigebom.repository.ViaturaRepository;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class EquipeService {
@@ -21,14 +20,14 @@ public class EquipeService {
     @Autowired
     private ViaturaRepository viaturaRepository;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void acoplar(Long bombeiroId, Long viaturaId) {
         if (bombeiroId == null || viaturaId == null) {
             throw new IllegalArgumentException("Bombeiro e viatura devem ser informados.");
         }
         Bombeiro bombeiro = bombeiroRepository.findById(bombeiroId)
                 .orElseThrow(() -> new IllegalArgumentException("Bombeiro não encontrado."));
-        Viatura destino = viaturaRepository.findById(viaturaId)
+        Viatura destino = viaturaRepository.findByIdForUpdate(viaturaId)
                 .orElseThrow(() -> new IllegalArgumentException("Viatura não encontrada."));
 
         if (bombeiro.getViatura() != null && Objects.equals(bombeiro.getViatura().getId(), viaturaId)) {
@@ -45,7 +44,7 @@ public class EquipeService {
         bombeiroRepository.save(bombeiro);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void desacoplar(Long bombeiroId) {
         if (bombeiroId == null) {
             throw new IllegalArgumentException("Bombeiro inválido.");
@@ -56,7 +55,7 @@ public class EquipeService {
         bombeiroRepository.save(bombeiro);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void trocar(Long bombeiroAId, Long bombeiroBId) {
         if (bombeiroAId == null || bombeiroBId == null || Objects.equals(bombeiroAId, bombeiroBId)) {
             throw new IllegalArgumentException("Escolha dois bombeiros diferentes.");

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title th:text="${ocorrencia.id == null ? 'Registrar Ocorrência - SIGEBOM' : 'Editar Ocorrência - SIGEBOM'}">Registrar Ocorrência - SIGEBOM</title>
+  <title th:text="${ocorrencia.id == null ? 'Registrar Ocorrência - SIGEBOM' : (somenteLeitura ? 'Visualizar Ocorrência - SIGEBOM' : 'Editar Ocorrência - SIGEBOM')}">Registrar Ocorrência - SIGEBOM</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet">
@@ -45,15 +45,21 @@
     <div class="conteudo">
       <header class="topo">
         <p class="trilha-nav">Operação / Ocorrências / <b
-            th:text="${ocorrencia.id == null ? 'Nova' : 'Editar #' + ocorrencia.id}">Nova</b></p>
+            th:text="${ocorrencia.id == null ? 'Nova' : (somenteLeitura ? 'Visualizar #' + ocorrencia.id : 'Editar #' + ocorrencia.id)}">Nova</b></p>
       </header>
 
       <main>
         <div class="cabecalho-pagina">
-          <h1 th:text="${ocorrencia.id == null ? 'Registrar Ocorrência' : 'Editar Ocorrência #' + ocorrencia.id}">Registrar Ocorrência</h1>
+          <h1 th:text="${ocorrencia.id == null ? 'Registrar Ocorrência' : (somenteLeitura ? 'Visualizar Ocorrência #' + ocorrencia.id : 'Editar Ocorrência #' + ocorrencia.id)}">Registrar Ocorrência</h1>
         </div>
 
-        <!-- US08: Trilha de Timestamps das Mudanças de Status -->
+        <div class="aviso aviso-ok" th:if="${sucesso}" th:text="${sucesso}" role="status" style="max-width: 860px;"></div>
+        <div class="aviso aviso-erro" th:if="${erro}" th:text="${erro}" role="alert" style="max-width: 860px;"></div>
+        <div class="aviso" th:if="${somenteLeitura}" role="status" style="max-width: 860px;">
+          Esta ocorrência já foi finalizada. Apenas Atendentes ou Administradores podem alterá-la (modo somente visualização).
+        </div>
+
+        <!-- US08 e US25: Trilha de Timestamps das Mudanças de Status -->
         <div class="trilha" th:if="${ocorrencia.id != null}" style="max-width: 860px; margin-bottom: 20px;">
           <div class="etapa" th:classappend="${ocorrencia.horarioAcionamento != null ? 'concluida' : 'pendente'}">
             <span class="nome">
@@ -89,9 +95,62 @@
           </div>
         </div>
 
+        <!-- US25: Fluxo Sequencial Obrigatório usando exclusivamente os componentes nativos do estilo.css -->
+        <div class="cartao" th:if="${ocorrencia.id != null and ocorrencia.emAberto}" style="max-width: 860px; margin-bottom: 20px;">
+          <header>
+            <h2>Transição Sequencial de Status</h2>
+            <span class="selo selo-atendimento" th:text="${ocorrencia.status != null ? ocorrencia.status.rotulo : '-'}">Empenhada</span>
+          </header>
+          <div class="corpo">
+            <p class="texto-fraco mt-0" th:if="${ocorrencia.status != null and ocorrencia.status.name() == 'REGISTRADA'}">
+              Empenhe ao menos uma viatura abaixo e salve para iniciar o fluxo obrigatório (Deslocamento &rarr; Local &rarr; Finalizada).
+            </p>
+            <p class="texto-fraco mt-0" th:if="${ocorrencia.status != null and ocorrencia.status.name() != 'REGISTRADA'}">
+              Siga a sequência obrigatória. O horário de cada etapa é capturado automaticamente na transição.
+            </p>
+
+            <div class="acoes-linha" style="flex-wrap: wrap;">
+              <!-- Passo 1: Em Deslocamento -->
+              <form th:if="${ocorrencia.status != null and ocorrencia.status.name() == 'EMPENHADA'}"
+                    th:action="@{/ocorrencias/{id}/avancar-status(id=${ocorrencia.id})}" method="post" style="margin: 0;">
+                <input type="hidden" name="novoStatus" value="EM_DESLOCAMENTO">
+                <input type="hidden" name="origem" value="editar">
+                <button type="submit" class="btn btn-acao">1. Iniciar Deslocamento</button>
+              </form>
+              <button type="button" disabled class="btn btn-vazio"
+                      th:if="${ocorrencia.status == null or ocorrencia.status.name() != 'EMPENHADA'}"
+                      th:text="${ocorrencia.horarioDeslocamento != null ? '1. Deslocamento (Concluído)' : '1. Iniciar Deslocamento'}">
+                1. Iniciar Deslocamento
+              </button>
+
+              <!-- Passo 2: No Local -->
+              <form th:if="${ocorrencia.status != null and ocorrencia.status.name() == 'EM_DESLOCAMENTO'}"
+                    th:action="@{/ocorrencias/{id}/avancar-status(id=${ocorrencia.id})}" method="post" style="margin: 0;">
+                <input type="hidden" name="novoStatus" value="NO_LOCAL">
+                <input type="hidden" name="origem" value="editar">
+                <button type="submit" class="btn btn-acao">2. Chegada no Local</button>
+              </form>
+              <button type="button" disabled class="btn btn-vazio"
+                      th:if="${ocorrencia.status == null or ocorrencia.status.name() != 'EM_DESLOCAMENTO'}"
+                      th:text="${ocorrencia.horarioNoLocal != null ? '2. No Local (Concluído)' : '2. Chegada no Local'}">
+                2. Chegada no Local
+              </button>
+
+              <!-- Passo 3: Finalizada -->
+              <a th:if="${ocorrencia.podeFinalizar}"
+                 class="btn btn-acao"
+                 th:href="@{/ocorrencias/{id}/boletim(id=${ocorrencia.id})}">
+                3. Finalizar (Boletim)
+              </a>
+              <button type="button" disabled class="btn btn-vazio" th:if="${!ocorrencia.podeFinalizar}">
+                3. Finalizar (Boletim)
+              </button>
+            </div>
+          </div>
+        </div>
+
         <form th:action="@{/ocorrencias}" th:object="${ocorrencia}" method="post" style="max-width: 860px;">
           <input type="hidden" th:field="*{id}">
-          <!-- US21: Campos internos/invisíveis que preservam o horário original da máquina e o log de auditoria -->
           <input type="hidden" th:field="*{horarioAcionamentoOriginal}">
           <input type="hidden" th:field="*{logAuditoriaInterno}">
 
@@ -100,29 +159,29 @@
             <div class="grade-campos">
               <div class="campo largo">
                 <label for="tipo">Tipo da ocorrência</label>
-                <input type="text" id="tipo" th:field="*{tipo}" required
+                <input type="text" id="tipo" th:field="*{tipo}" required th:readonly="${somenteLeitura}"
                   placeholder="Ex: Incêndio em residência, Acidente de trânsito...">
               </div>
 
               <div class="campo largo">
                 <label for="descricao">Descrição detalhada</label>
-                <textarea id="descricao" th:field="*{descricao}" rows="3"
+                <textarea id="descricao" th:field="*{descricao}" rows="3" th:readonly="${somenteLeitura}"
                   placeholder="Detalhes adicionais relatados pelo solicitante..."></textarea>
               </div>
 
               <div class="campo">
                 <label for="endereco">Endereço</label>
-                <input type="text" id="endereco" th:field="*{endereco}" required placeholder="Rua, número, referências">
+                <input type="text" id="endereco" th:field="*{endereco}" required th:readonly="${somenteLeitura}" placeholder="Rua, número, referências">
               </div>
 
               <div class="campo">
                 <label for="bairro">Bairro</label>
-                <input type="text" id="bairro" th:field="*{bairro}" required>
+                <input type="text" id="bairro" th:field="*{bairro}" required th:readonly="${somenteLeitura}">
               </div>
 
               <div class="campo">
                 <label for="gravidade">Gravidade Inicial</label>
-                <select id="gravidade" th:field="*{gravidade}" required>
+                <select id="gravidade" th:field="*{gravidade}" required th:disabled="${somenteLeitura}">
                   <option value="">Selecione a gravidade</option>
                   <option value="ALTA">Alta (Crítica)</option>
                   <option value="MEDIA">Média (Urgente)</option>
@@ -131,17 +190,23 @@
               </div>
 
               <div class="campo" th:if="${ocorrencia.id != null}">
-                <label for="status">Situação da Ocorrência</label>
-                <select id="status" th:field="*{status}">
-                  <option th:each="s : ${statusValues}" th:value="${s}" th:text="${s}"></option>
-                </select>
+                <label for="statusExibicao">Situação Atual</label>
+                <input type="text" id="statusExibicao"
+                  th:value="${ocorrencia.status != null ? ocorrencia.status.rotulo : '-'}"
+                  readonly disabled>
+                <span class="ajuda" th:if="${ocorrenciaFinalizada}">
+                  Ocorrência finalizada: a situação atual não pode ser alterada.
+                </span>
+                <span class="ajuda" th:if="${!ocorrenciaFinalizada and !somenteLeitura}">
+                  Atualizada pelos botões do fluxo sequencial acima.
+                </span>
               </div>
 
               <!-- US21: Horário de acionamento automático na abertura e editável por Atendentes/Administradores -->
               <div class="campo" th:classappend="${ocorrencia.id == null ? '' : 'largo'}">
                 <label for="horarioAcionamento">Horário de Acionamento</label>
                 <input type="datetime-local" id="horarioAcionamento" th:field="*{horarioAcionamento}"
-                  th:readonly="${!#authorization.expression('hasAnyAuthority(''ATENDENTE'', ''ADMINISTRADOR'')')}"
+                  th:readonly="${somenteLeitura or !#authorization.expression('hasAnyAuthority(''ATENDENTE'', ''ADMINISTRADOR'')')}"
                   required>
                 <span class="ajuda">
                   Gerado automaticamente na abertura. Edição manual permitida para Atendentes (mantém rastro de auditoria interno).
@@ -154,17 +219,21 @@
             <legend>Viaturas Empenhadas</legend>
             <div class="grade-campos">
               <div class="campo largo">
-                <label>Selecione as viaturas (As selecionadas ficarão 'Em Atendimento')</label>
+                <label th:text="${(somenteLeitura or ocorrenciaFinalizada) ? 'Viaturas que atuaram nesta ocorrência' : 'Selecione as viaturas (As selecionadas ficarão Em Atendimento)'}">Viaturas</label>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
                   <th:block th:each="v : ${viaturasOpcoes}">
                     <label class="marcavel" style="width: auto; padding: 6px 12px;">
                       <input type="checkbox" name="viaturaIds" th:value="${v.id}"
-                        th:checked="${empenhadasIds.contains(v.id)}">
+                        th:checked="${empenhadasIds.contains(v.id)}"
+                        th:disabled="${somenteLeitura or ocorrenciaFinalizada}">
                       <span th:text="${v.prefixo + ' - ' + (v.tipo != null ? v.tipo.rotulo : '')}"></span>
                     </label>
                   </th:block>
-                  <span th:if="${viaturasOpcoes.empty}" class="ajuda">Nenhuma viatura disponível no momento.</span>
+                  <span th:if="${viaturasOpcoes.empty}" class="ajuda">Nenhuma viatura vinculada.</span>
                 </div>
+                <span class="ajuda" th:if="${ocorrenciaFinalizada}">
+                  Ocorrência finalizada: as viaturas empenhadas não podem ser alteradas.
+                </span>
               </div>
             </div>
           </fieldset>
@@ -174,20 +243,31 @@
             <div class="grade-campos">
               <div class="campo">
                 <label for="solicitante">Nome do Solicitante</label>
-                <input type="text" id="solicitante" th:field="*{solicitante}" required>
+                <input type="text" id="solicitante" th:field="*{solicitante}" required th:readonly="${somenteLeitura}">
               </div>
 
               <div class="campo">
                 <label for="telefoneSolicitante">Telefone de Contato</label>
-                <input type="tel" id="telefoneSolicitante" th:field="*{telefoneSolicitante}" required
+                <input type="tel" id="telefoneSolicitante" th:field="*{telefoneSolicitante}" required th:readonly="${somenteLeitura}"
                   placeholder="(00) 00000-0000">
               </div>
             </div>
           </fieldset>
 
+          <fieldset th:if="${ocorrenciaFinalizada}">
+            <legend>Boletim Final da Guarnição</legend>
+            <div class="grade-campos">
+              <div class="campo largo">
+                <label for="relatorio">Relatório de Encerramento</label>
+                <textarea id="relatorio" th:field="*{relatorio}" rows="5" th:readonly="${somenteLeitura}"
+                  placeholder="Nenhum relatório registrado."></textarea>
+              </div>
+            </div>
+          </fieldset>
+
           <div class="acoes-linha">
-            <button type="submit" class="btn btn-acao">Salvar Ocorrência</button>
-            <a class="btn btn-vazio" th:href="@{/ocorrencias}">Cancelar</a>
+            <button type="submit" class="btn btn-acao" th:if="${!somenteLeitura}">Salvar Ocorrência</button>
+            <a class="btn btn-vazio" th:href="@{/ocorrencias}" th:text="${somenteLeitura ? 'Voltar' : 'Cancelar'}">Cancelar</a>
           </div>
         </form>
       </main>
